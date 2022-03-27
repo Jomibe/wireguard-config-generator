@@ -8,7 +8,6 @@ import os  # Für Dateisystemzugriffe
 from pathlib import Path  # Für Dateipfadangaben
 import re  # Für das Parsen von Konfigurationsdateien
 
-
 # Interne Imports
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
