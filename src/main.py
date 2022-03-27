@@ -34,7 +34,7 @@ def main():
         print(" 2 --> Konfigurationen ändern")
         print(" 3 --> Schlüsselpaar des Servers neu generieren")
         print(" 4 --> Aktualisierung der Netzwerkgröße")
-        print(" 5 --> QR-src generieren")
+        print(" 5 --> QR-Code generieren")
         print("---------------------------------")
         print(" 0 --> Verlassen")
 
