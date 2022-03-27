@@ -14,9 +14,16 @@ class ServerConfig:
     """
 
     def __init__(self):
-        self.address = ""  # Die Hostadresse im VPN.
-        self.clients = []  # Liste der Client-Konfigurationen, gespeichert in einem dict.
+        self.name = ""  # Die Bezeichnung des Servers ("friendly name").
         self.filename = WG_DIR + SERVER_CONFIG_FILENAME  # Der Dateiname inkl. Dateiendung.
-        self.listen_port = ""  # Der öffentlich erreichbare Port für die Kommunikation.
-        self.private_key = ""  # Der private Schlüssel, base64 kodiert.
-        self.public_key = ""  # Der öffentliche Schlüssel, base64 kodiert.
+        self.address = ""  # Die Hostadresse im VPN.
+        self.listenport = ""  # Der Port auf welchem gelauscht wird.        self.private_key = ""  # Der private Schlüssel, base64 kodiert.
+        self.privatekey = ""  # Der private Schlüssel, base64 kodiert.
+        self.dns = ""  # Zu verwendende DNS-Server.
+        self.table = ""  # Zu verwendende Routingtabellen.
+        self.mtu = ""  # Angepasste maximale Übertragungseinheit.
+        self.preup = ""  # Auszuführende Programme vor dem Verbindungsaufbau
+        self.postup = ""  # Auszuführende Programme nach dem Verbindungsaufbau
+        self.predown = ""  # Auszuführende Programme vor dem Verbindungsabbau
+        self.postdown = ""  # Auszuführende Programme nach dem Verbindungsabbau
+        self.clients = []  # Liste der verwandten Client-Konfigurationen.
