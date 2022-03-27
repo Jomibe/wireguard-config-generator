@@ -11,3 +11,6 @@ SERVER_CONFIG_FILENAME = "wg0.conf"
 # Quelle: https://docs.sweeting.me/s/wireguard#Overview
 CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Table", "MTU", "PreUp", "PostUp", "PreDown",
                      "PostDown", "AllowedIPs", "Endpoint", "PublicKey", "PersistentKeepalive")
+
+# Zusätzliche Ausgaben zum Programmablauf ausgeben
+DEBUG = True

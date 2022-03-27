@@ -18,6 +18,7 @@ import sys
 # Interne Imports
 from importing import import_configurations
 from ServerConfig import ServerConfig
+from constants import DEBUG
 
 
 def main():
@@ -41,7 +42,8 @@ def main():
         option = input("? ")
 
         if option == "1":
-            print("Importiere Verbindungen...", "")
+            if DEBUG:
+                print("Importiere Verbindungen...", "")
             import_configurations(server)
         elif option == "0":
             repeat = False

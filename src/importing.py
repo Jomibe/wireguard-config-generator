@@ -12,6 +12,7 @@ import re  # Für das Parsen von Konfigurationsdateien
 # Interne Imports
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
+from constants import DEBUG
 
 
 def import_configurations(server):
@@ -50,7 +51,8 @@ def import_configurations(server):
         print("Warnung: Keine Serverkonfiguration wg0.conf gefunden.")
 
     # Zu importierende Clientkonfigurationen anzeigen
-    print(f"Info: Folgende Clientkonfigurationen wurden gefunden: {list_client_configuration_filenames}")
+    if DEBUG:
+        print(f"Info: Folgende Clientkonfigurationen wurden gefunden: {list_client_configuration_filenames}")
 
     # Konfigurationen importieren
 
@@ -79,7 +81,8 @@ def import_configurations(server):
                             server.clients[-1][parameter] = re.split(f"^{parameter} = ", line, re.IGNORECASE)
 
         for client in server.clients:
-            print("Client " + str(client["description"]) + " hat den privaten Schlüssel ")  # + client["private_key"])
+            if DEBUG:
+                print("Client " + str(client["description"]) + " hat den privaten Schlüssel ")  # + client["private_key"])
 
         # Parameter importieren
 
