@@ -19,7 +19,7 @@ class ClientConfig:
         self.dns = ""  # Verwendete DNS-Server.
         self.table = ""  # Verwendete Routing-Tabellen.
         self.mtu = ""  # Angepasste maximale Übertragungseinheit.
-        self.preup = "" # Auszuführende Programme vor dem Verbindungsaufbau
+        self.preup = ""  # Auszuführende Programme vor dem Verbindungsaufbau
         self.postup = ""  # Auszuführende Programme nach dem Verbindungsaufbau
         self.predown = ""  # Auszuführende Programme vor dem Verbindungsabbau
         self.postdown = ""  # Auszuführende Programme nach dem Verbindungsabbau
@@ -27,6 +27,6 @@ class ClientConfig:
         self.endpoint = ""  # Die IP-Adresse oder der Hostname des VPN-Servers.
         self.public_key = ""  # Der öffentliche Schlüssel, base64 kodiert.
         self.persistentkeepalive = ""  # Abstand zwischen zwei Erreichbarkeitssignalen.
-        self.client_publickey = "" # Öffentlicher Schlüssel des Clients.
-        self.client_endpoint = "" # Externe IP-Adresse oder Hostname des Clients aus Sicht des Servers.
+        self.client_publickey = ""  # Öffentlicher Schlüssel des Clients.
+        self.client_endpoint = ""  # Externe IP-Adresse oder Hostname des Clients aus Sicht des Servers.
         self.client_persistentkeepalive = ""  # Abstand zwischen zwei vom Server gesendeten Erreichbarkeitssignalen
