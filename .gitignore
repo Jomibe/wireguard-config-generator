@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Visual Paradigm Backups
+*.vpp.bak_[0-9*]d
+
+# macOS
+.DS_Store
+
+# doc
+doc/pic
+doc/Visual Paradigm Projekt/*
