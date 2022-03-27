@@ -13,6 +13,7 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 """
 
 # Öffentliche Imports
+import colorama  # Für vom Betriebssystem unabhängige farbige Ausgaben
 import sys
 
 # Interne Imports
@@ -26,6 +27,7 @@ def main():
     Hauptmenü.
     """
     server = ServerConfig()
+    colorama.init()  # Colorama passt sich an das Betriebssystem an
 
     repeat = True
     while repeat:
