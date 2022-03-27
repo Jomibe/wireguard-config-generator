@@ -137,3 +137,6 @@ dmypy.json
 # doc
 doc/pic
 doc/Visual Paradigm Projekt/*
+
+# Pycharm
+.idea/
