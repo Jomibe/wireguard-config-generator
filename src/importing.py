@@ -78,6 +78,8 @@ def import_configurations(server):
         # Öffnen der Datei
         with open(file) as config:
             # Datei Zeile für Zeile einlesen
+            if DEBUG:
+                print(f"{Fore.BLUE}Info: Lese Datei {Style.RESET_ALL}{file}")
             for line in config:
                 if DEBUG:
                     # Zeile ohne \n ausgeben
