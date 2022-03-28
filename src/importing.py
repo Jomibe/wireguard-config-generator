@@ -108,9 +108,10 @@ def parse_and_import(peer):
                         print(f"{Fore.GREEN}Erfolg: Bezeichnung {Style.RESET_ALL}{peer.name}"
                               f"{Fore.GREEN} hinterlegt{Style.RESET_ALL}")
                 else:
-                    print(f"{Fore.BLUE}Info: Es sind mehrere kommentierte Zeilen in der Datei vorhanden."
-                          f"Der erste Kommentar wurde als Bezeichnung interpretiert, dieser und folgende Kommentare"
-                          f" werden ignoriert.{Style.RESET_ALL}")
+                    if DEBUG:
+                        print(f"{Fore.BLUE}Info: Es sind mehrere kommentierte Zeilen in der Datei vorhanden."
+                              f"Der erste Kommentar wurde als Bezeichnung interpretiert, dieser und folgende Kommentare"
+                              f" werden ignoriert.{Style.RESET_ALL}")
                 continue
 
             match = re.search("^(.*) *= *(.*)", line, re.IGNORECASE)
