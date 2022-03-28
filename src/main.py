@@ -18,6 +18,7 @@ import sys
 
 # Interne Imports
 from importing import import_configurations
+from management import print_configurations
 from ServerConfig import ServerConfig
 from constants import DEBUG
 
@@ -50,6 +51,9 @@ def main():
             if DEBUG:
                 print(f"{Fore.BLUE}Info: Importiere Verbindungen...{Style.RESET_ALL}")
             import_configurations(server)
+            if DEBUG:
+                print(f"{Fore.GREEN}Erfolg: Verbindungen importiert{Style.RESET_ALL}")
+                print_configurations(server)
         elif option == "0":
             repeat = False
 
