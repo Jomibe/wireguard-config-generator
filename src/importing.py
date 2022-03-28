@@ -134,11 +134,13 @@ def import_configurations(server):
                     if key.lower() in config_parameters:
                         # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                         setattr(server.clients[-1], key.lower(), value)
-                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                        if DEBUG:
+                            print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
                         # "Streiche" den Parameter von der Liste der notwendigen Parameter, falls vorhanden
                         if key.lower() in minimal_parameters:
-                            print(f"{Fore.GREEN}Erfolg: Parameter war in der Liste der notwendigen Parameter enthalten"
-                                  f"{Style.RESET_ALL}")
+                            if DEBUG:
+                                print(f"{Fore.GREEN}Erfolg: Parameter war in der Liste der notwendigen Parameter "
+                                      f"enthalten {Style.RESET_ALL}")
                             minimal_parameters.remove(key.lower())
 
                     # Falls nein: gebe eine entsprechende Warnung aus

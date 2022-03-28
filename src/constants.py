@@ -13,7 +13,7 @@ CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Tabl
                      "PostDown", "AllowedIPs", "Endpoint", "PublicKey", "PersistentKeepalive")
 
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
-DEBUG = True
+DEBUG = False
 
 # Für den Betrieb notwendige Konfigurationsparameter. Müssen in Kleinbuchstaben eingegeben werden.
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")
