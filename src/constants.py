@@ -15,5 +15,5 @@ CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Tabl
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
 DEBUG = False
 
-# Für den Betrieb notwendige Konfigurationsparameter. Müssen in Kleinbuchstaben eingegeben werden.
+# Für den Betrieb notwendige Konfigurationsparameter
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")

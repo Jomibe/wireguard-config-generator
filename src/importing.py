@@ -49,7 +49,9 @@ def parse_and_import(peer):
         config_parameters.append(parameter.lower())
 
     # Vorbereitung auf die Prüfung auf Vollständigkeit der notwendigen Parameter
-    minimal_parameters = list(MINIMAL_CONFIG_PARAMETERS)
+    minimal_parameters = []
+    for parameter in MINIMAL_CONFIG_PARAMETERS:
+        minimal_parameters.append(parameter.lower())
 
     # Fallunterscheidung: soll eine Server- oder Clientkonfiguration importiert werden?
     is_server = False
