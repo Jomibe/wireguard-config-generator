@@ -48,7 +48,7 @@ def main():
 
         if option == "1":
             if DEBUG:
-                print("Importiere Verbindungen...", "")
+                print(f"{Fore.BLUE}Info: Importiere Verbindungen...{Style.RESET_ALL}")
             import_configurations(server)
         elif option == "0":
             repeat = False
