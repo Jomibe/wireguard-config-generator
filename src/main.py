@@ -10,6 +10,7 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 ! INI-Syntax wird nicht vollständig abgebildet: s.o., Name muss als Kommentar eingefügt werden
 ? Erweiterbarkeit: Datenstruktur als abgeleitete Klasse von dict (kompliziert, wird von abgeraten) vs. dict (primitiv)
   vs. neue abgeleitete Klasse (schönste Lösung, umständliche Erweiterung)
+! Schlüsselgenerierung: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
 """
 
 # Öffentliche Imports
