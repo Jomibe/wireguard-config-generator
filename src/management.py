@@ -36,8 +36,10 @@ def print_configurations(server):
         return
 
     # Anzeige der Details pro Client: Bezeichnung, IP-Adresse, Anfang öffentlicher Schlüssel
+    print(f"{Style.BRIGHT}", end="")
+    print("{0:12} | {1:18}".format("Name", f"Privater Schlüssel{Style.RESET_ALL}"))
     for client in server.clients:
-        print("{0:4} | {0:8}".format(client.name, client.privatekey[0:5] + "..."))
+        print("{0:12} | {1:18}".format(client.name[:12], client.privatekey[:15] + "..."))
 
 
 def check_configuration_integrity(server):
