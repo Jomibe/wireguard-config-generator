@@ -53,7 +53,7 @@ def main():
             import_configurations(server)
             if DEBUG:
                 print(f"{Fore.GREEN}Erfolg: Verbindungen importiert{Style.RESET_ALL}")
-                print_configurations(server)
+            print_configurations(server)
         elif option == "0":
             repeat = False
 
