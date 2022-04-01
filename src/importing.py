@@ -15,8 +15,10 @@ from constants import WG_DIR
 from constants import DEBUG
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import SERVER_CONFIG_FILENAME
+from constants import PEER_CONFIG_PARAMETERS
 from ClientConfig import ClientConfig
 from ServerConfig import ServerConfig
+from Peer import Peer
 
 
 def parse_and_import(peer):
@@ -43,10 +45,20 @@ def parse_and_import(peer):
     if os.access(Path(peer.filename), os.W_OK) is not True:
         SystemExit(f"{Fore.RED}Fehler: Die Datei {peer.filename} ist nicht beschreibbar.{Style.RESET_ALL}")
 
+    # Vorbereitung, "deklarieren" der peer_config Variable für das Sammeln und Übertragen von Parametern einer
+    # Peer-Sektion
+    client_data = ""
+
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
+    # TODO können die statischen Variablen hier nicht schon als Liste übergeben werden?
     config_parameters = []
     for parameter in CONFIG_PARAMETERS:
         config_parameters.append(parameter.lower())
+
+    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion
+    peer_config_parameters = []
+    for parameter in PEER_CONFIG_PARAMETERS:
+        peer_config_parameters.append(parameter.lower())
 
     # Vorbereitung auf die Prüfung auf Vollständigkeit der notwendigen Parameter
     minimal_parameters = []
@@ -87,10 +99,36 @@ def parse_and_import(peer):
                 continue
 
             match = re.search('^\[.*]$', line)
-            # Bei Sektion: fahre fort
+            # Bei Sektion: Unterscheide zwischen Server und Client. Client: fahre fort. Server: Importiere Daten in die
+            # Datenstruktur des Clients.
             if match:
                 if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Zeile enthält eine INI-Sektion{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}Erfolg: Zeile leitet eine INI-Sektion ein{Style.RESET_ALL}")
+
+                match = re.search('^ *\[Peer] *$', line, re.IGNORECASE)
+                if match and is_server:
+                    if DEBUG:
+                        print(f"{Fore.GREEN}Erfolg: Zeile leitet eine Peer-Sektion ein{Style.RESET_ALL}")
+
+                    # Die Daten werden zeilenweise eingelesen. Eine Peer-Sektion besteht aus unbekannt vielen Zeilen.
+                    # Um die Daten zu einem peer zu sammeln, muss also zeilenübergreifend gearbeitet werden. Die Daten
+                    # des Peers werden in die Variable peer geschrieben. Zu Beginn der nächsten Peer-Sektion oder nach
+                    # Ende der Datei werden die gespeicherten Konfigurationsparameter in das server Objekt übernommen.
+                    # Die Zuordnung erfolgt dabei über das Schlüsselpaar. Mit dem bereits bekannten privaten Schlüssel
+                    # kann der öffentliche Schlüssel berechnet werden. Die Daten werden für den Client hinterlegt,
+                    # dessen errechneter öffentlicher Schlüssel mit dem des hinterlegten übereinstimmt.
+
+                    # Zuerst werden Daten aus dem Objekt client_data gesichert, falls notwendig
+                    if isinstance(client_data, Peer):
+                        # peer ist hier immer ein Objekt der Klasse ServerConfig
+                        assign_peer_to_client(client_data, peer)
+
+                    # Danach wird ein neues Objekt angelegt
+                    client_data = Peer()
+
+                    # In den folgenden Durchläufen werden clientspezifische Daten in dem Objekt gesammelt, bis diese
+                    # mit der oben aufgerufenen Funktion assign_peer_to_client in die Datenstruktur übernommen werden.
+
                 continue
 
             match = re.search('^#', line)
@@ -126,7 +164,16 @@ def parse_and_import(peer):
                 if DEBUG:
                     print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
                           f"enthalten ist")
-                if key.lower() in config_parameters:
+                # Prüfe, ob der Parameter Teil einer Peer-Sektion einer Serverkonfiguration ist
+                if key.lower() in peer_config_parameters and is_server:
+                    # Falls ja, Parameter nicht im peer-Objekt hinterlegen, sondern im client_data Objekt vorhalten
+                    setattr(client_data, key.lower(), value)
+                    if DEBUG:
+                        print(f"{Fore.GREEN}Erfolg: Ein Parameter aus einer Server-Peer Sektion wurde für die spätere "
+                              f"Verarbeitung zurückgestellt.")
+
+                # Sonst: prüfe, ob der Parameter grundsätzlich gültig ist
+                elif key.lower() in config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(peer, key.lower(), value)
                     if DEBUG:
@@ -152,6 +199,23 @@ def parse_and_import(peer):
         if len(minimal_parameters) > 0:
             print(f"{Fore.RED}Fehler: Datei {re.split(WG_DIR, peer.filename)[1]} enthält nicht die erforderlichen "
                   f"Parameter {MINIMAL_CONFIG_PARAMETERS}{Style.RESET_ALL}")
+
+        # und für den Fall, dass eine Peer-Sektion endet: übertrage Daten von client_data in das server Objekt.
+        if isinstance(client_data, Peer):  # Falls eine Peer-Sektion verarbeitet wurde # TODO Refactoring Peer
+            assign_peer_to_client(client_data, peer)  # peer ist in diesem Fall immer ein Objekt der Klasse ServerConfig
+
+
+def assign_peer_to_client(client_data, server):
+    """
+    client_data enthält Konfigurationsparameter aus der Peer-Sektion einer Serverkonfiguration. Die Daten müssen einem
+    bereits importierten Client anhand des öffentlichen Schlüssels zugeordnet werden. Dazu wird das Attribut publickey
+    der Objekte in server.clients[] mit dem Attribut client_data.publickey verglichen.
+    """
+
+    print("### ASSIGNING ###")
+
+    # Nach Abschluss: Daten bereinigen und Variable für die nächste Verwendung vorbereiten
+    client_data = ""
 
 
 def import_configurations(server):

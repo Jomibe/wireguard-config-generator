@@ -9,8 +9,15 @@ WG_DIR = "../res/"
 SERVER_CONFIG_FILENAME = "wg0.conf"
 
 # Quelle: https://docs.sweeting.me/s/wireguard#Overview
-CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Table", "MTU", "PreUp", "PostUp", "PreDown",
-                     "PostDown", "AllowedIPs", "Endpoint", "PublicKey", "PersistentKeepalive")
+# Parameter der Sektion Interface
+INTERFACE_CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Table", "MTU", "PreUp", "PostUp",
+                               "PreDown", "PostDown")
+
+# Parameter der Sektion Peer
+PEER_CONFIG_PARAMETERS = ("AllowedIPs", "Endpoint", "PublicKey", "PersistentKeepalive")
+
+# Alle Konfigurationsparameter
+CONFIG_PARAMETERS = INTERFACE_CONFIG_PARAMETERS + PEER_CONFIG_PARAMETERS
 
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
 DEBUG = False
