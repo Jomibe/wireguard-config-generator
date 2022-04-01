@@ -47,10 +47,6 @@ def check_configuration_integrity(server):
     Prüft die importierten Konfigurationen auf Plausibilität und Vollständigkeit.
     """
 
-    # Prüfung, ob alle Clients in der Serverkonfiguration vorhanden sind.
-
-    # Prüfung, ob alle Clients aus der Serverkonfiguration vorhanden sind.
-
     # Prüfung, ob die privaten und öffentlichen Schlüssel der Clients zueinander passen.
 
     # Prüfung, ob IP-Adresskonflikte vorliegen.
