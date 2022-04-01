@@ -212,10 +212,53 @@ def assign_peer_to_client(client_data, server):
     der Objekte in server.clients[] mit dem Attribut client_data.publickey verglichen.
     """
 
-    print("### ASSIGNING ###")
+    # Prüfung, ob client_data einen öffentlichen Schlüssel enthält
+    # Falls nicht, ist eine Zuordnung unmöglich
+    if client_data.publickey == "":
+        print(f"{Fore.YELLOW}Warnung: eine Peer-Sektion aus der Serverkonfiguration kann keinem Client zugeordnet "
+              f"werden. Die Peer-Sektionen müssen einen Wert für PublicKey enthalten. Bitte die Sektion mit folgenden "
+              f"Werten prüfen: ", end="")
 
-    # Nach Abschluss: Daten bereinigen und Variable für die nächste Verwendung vorbereiten
-    client_data = ""
+        additional_values = False
+        for parameter in PEER_CONFIG_PARAMETERS:
+            if getattr(client_data, parameter.lower()) != "":
+                print(f"{parameter} = {getattr(client_data, parameter.lower())}", end="")
+                additional_values = True
+
+        if not additional_values:
+            print(f"es handelt sich um eine leere Peer-Sektion.{Style.RESET_ALL}")
+        else:
+            print(f"{Style.RESET_ALL}")  # Zeilenumbruch
+
+    # Falls ein öffentlicher Schlüssel hinterlegt wurde, diesen mit den vorhandenen Schlüsseln abgleichen
+    else:
+        # Vorbereitung für den Programmablauf nach erfolgreicher Übertragung der Parameter in das server-Objekt
+        success = False
+
+        if DEBUG:
+            print(f"{Fore.BLUE}Info: Zuordnung der Client-Sektion zu vorhandenen Clients{Style.RESET_ALL}")
+        for client in server.clients:
+            if client.publickey == client_data.publickey:
+                if DEBUG:
+                    print(f"{Fore.GREEN}Erfolg: Übereinstimmung gefunden{Style.RESET_ALL}")
+                # Daten übertragen
+                if DEBUG:
+                    print(f"{Fore.BLUE}Info: Beginne mit der Übertragung der Parameter{Style.RESET_ALL}")
+                for parameter in MINIMAL_CONFIG_PARAMETERS:
+                    # Die Parameter aus den Peer-Sektionen der Serverkonfiguration werden clientspezifisch gespeichert.
+                    # Da in den Konfigurationen der Clients auch eine Peer-Sektion vorkommt, wird den Parametern aus
+                    # der Serverkonfiguration ein 'client_' vorangestellt.
+                    setattr(client, "client_" + parameter.lower(), getattr(client_data, parameter.lower()))
+                if DEBUG:
+                    print(f"{Fore.GREEN}Erfolg: Parameter erfolgreich übernommen")
+                success = True
+
+        if not success:
+            print(f"{Fore.YELLOW}Warnung: eine Peer-Sektion konnte keinem Client zugeordnet werden, da kein "
+                  f"übereinstimmender öffentlicher Schlüssel in der Konfiguration enthalten ist. Das Schlüsselpaar "
+                  f"ist ungültig. Bitte in der Serverkonfiguration {Style.RESET_ALL}{WG_DIR}{SERVER_CONFIG_FILENAME}"
+                  f"{Fore.YELLOW} die Sektion mit dem öffentlichen Schlüssel {Style.RESET_ALL}{client_data.publickey}"
+                  f"{Fore.YELLOW} prüfen.{Style.RESET_ALL}")
 
 
 def import_configurations(server):
