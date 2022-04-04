@@ -137,3 +137,4 @@ doc/Visual Paradigm Projekt/*
 
 # Pycharm
 .idea/
+src/pylintrc
