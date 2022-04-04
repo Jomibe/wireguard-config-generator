@@ -2,23 +2,28 @@
 Enthält alle Funktionen für das Importieren von Konfigurationen auf dem Dateisystem in interne Datenstrukturen.
 """
 
-# Öffentliche Imports
-from colorama import Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+# Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
+# pylint: disable=import-error
+
+# Imports aus Standardbibliotheken
 import glob  # Für das Auffinden von Konfigurationsdateien mittels Wildcard
-import os  # Für Dateisystemzugriffe
-from pathlib import Path  # Für Dateipfadangaben
 import re  # Für das Parsen von Konfigurationsdateien
 
-# Interne Imports
+# Imports von Drittanbietern
+from colorama import Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+
+# Eigene Imports
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
 from constants import DEBUG
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import SERVER_CONFIG_FILENAME
 from constants import PEER_CONFIG_PARAMETERS
-from ClientConfig import ClientConfig
-from ServerConfig import ServerConfig
-from Peer import Peer
+from client_config import ClientConfig
+from file_management import check_file
+from file_management import check_dir
+from server_config import ServerConfig
+from peer import Peer
 
 
 def parse_and_import(peer):
@@ -28,42 +33,20 @@ def parse_and_import(peer):
     """
 
     # Parameterprüfungen
-    # TODO Prüfung des Pfades auslagern?
-    # Prüfung, ob der Pfad existiert.
-    if not Path(peer.filename).exists():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {peer.filename} existiert nicht.{Style.RESET_ALL}")
-
-    # Prüfung, ob der Pfad auf eine Datei zeigt.
-    if not Path(peer.filename).is_file():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {peer.filename} ist keine Datei.{Style.RESET_ALL}")
-
-    # Prüfung, ob die Datei gelesen werden kann.
-    if os.access(Path(peer.filename), os.R_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Die Datei {peer.filename} ist nicht lesbar.{Style.RESET_ALL}")
-
-    # Prüfung, ob in die Datei geschrieben werden kann.
-    if os.access(Path(peer.filename), os.W_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Die Datei {peer.filename} ist nicht beschreibbar.{Style.RESET_ALL}")
+    check_file(peer.filename)
 
     # Vorbereitung, "deklarieren" der peer_config Variable für das Sammeln und Übertragen von Parametern einer
     # Peer-Sektion
     client_data = ""
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
-    # TODO können die statischen Variablen hier nicht schon als Liste übergeben werden?
-    config_parameters = []
-    for parameter in CONFIG_PARAMETERS:
-        config_parameters.append(parameter.lower())
+    config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
     # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion
-    peer_config_parameters = []
-    for parameter in PEER_CONFIG_PARAMETERS:
-        peer_config_parameters.append(parameter.lower())
+    peer_config_parameters = [parameter.lower() for parameter in PEER_CONFIG_PARAMETERS]
 
     # Vorbereitung auf die Prüfung auf Vollständigkeit der notwendigen Parameter
-    minimal_parameters = []
-    for parameter in MINIMAL_CONFIG_PARAMETERS:
-        minimal_parameters.append(parameter.lower())
+    minimal_parameters = [parameter.lower() for parameter in MINIMAL_CONFIG_PARAMETERS]
 
     # Fallunterscheidung: soll eine Server- oder Clientkonfiguration importiert werden?
     is_server = False
@@ -82,7 +65,7 @@ def parse_and_import(peer):
               f"{Style.RESET_ALL}")
 
     # Öffnen der Datei
-    with open(peer.filename) as config:
+    with open(peer.filename, encoding='utf-8') as config:
         # Datei Zeile für Zeile einlesen
         if DEBUG:
             print(f"{Fore.BLUE}Info: Lese Datei {Style.RESET_ALL}{peer.filename}")
@@ -91,21 +74,21 @@ def parse_and_import(peer):
                 # Zeile ohne \n ausgeben
                 print(f"{Fore.BLUE}Info: Lese Zeile{Style.RESET_ALL}", line.replace('\n', ''))
             # Die Zeile wird auf Bestandteile der Syntax untersucht: leer, Kommentar, Sektion oder Name-Wert Paar
-            match = re.search('^ *$', line)  # Leere Zeile darf keine oder nur Leerzeichen enthalten
+            match = re.search(r'^ *$', line)  # Leere Zeile darf keine oder nur Leerzeichen enthalten
             # Bei leerer Zeile: fahre fort
             if match:
                 if DEBUG:
                     print(f"{Fore.GREEN}Erfolg: Zeile enthält keine Konfiguration.{Style.RESET_ALL}")
                 continue
 
-            match = re.search('^\[.*]$', line)
+            match = re.search(r'^\[.*]$', line)
             # Bei Sektion: Unterscheide zwischen Server und Client. Client: fahre fort. Server: Importiere Daten in die
             # Datenstruktur des Clients.
             if match:
                 if DEBUG:
                     print(f"{Fore.GREEN}Erfolg: Zeile leitet eine INI-Sektion ein{Style.RESET_ALL}")
 
-                match = re.search('^ *\[Peer] *$', line, re.IGNORECASE)
+                match = re.search(r'^ *\[Peer] *$', line, re.IGNORECASE)
                 if match and is_server:
                     if DEBUG:
                         print(f"{Fore.GREEN}Erfolg: Zeile leitet eine Peer-Sektion ein{Style.RESET_ALL}")
@@ -131,7 +114,7 @@ def parse_and_import(peer):
 
                 continue
 
-            match = re.search('^#', line)
+            match = re.search(r'^#', line)
             # Bei Kommentar: der erste Kommentar gibt die Bezeichnung des Clients an
             # Die Bezeichnung ist kein offizieller Parameter (aber ein INI-Standard) und wird daher gesondert
             # behandelt.
@@ -201,7 +184,7 @@ def parse_and_import(peer):
                   f"Parameter {MINIMAL_CONFIG_PARAMETERS}{Style.RESET_ALL}")
 
         # und für den Fall, dass eine Peer-Sektion endet: übertrage Daten von client_data in das server Objekt.
-        if isinstance(client_data, Peer):  # Falls eine Peer-Sektion verarbeitet wurde # TODO Refactoring Peer
+        if isinstance(client_data, Peer):  # Falls eine Peer-Sektion verarbeitet wurde
             assign_peer_to_client(client_data, peer)  # peer ist in diesem Fall immer ein Objekt der Klasse ServerConfig
 
 
@@ -266,23 +249,7 @@ def import_configurations(server):
     Importiert alle VPN-Konfigurationen im Wireguard-Verzeichnis.
     """
 
-    # Prüfung, ob der Pfad existiert.
-    if not Path(WG_DIR).exists():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {WG_DIR} existiert nicht.{Style.RESET_ALL}")
-
-    # Prüfung, ob der Pfad auf ein Verzeichnis zeigt.
-    if not Path(WG_DIR).is_dir():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {WG_DIR} ist kein Ordner.{Style.RESET_ALL}")
-
-    # Prüfung, ob das Verzeichnis gelesen werden kann.
-    if os.access(Path(WG_DIR), os.R_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Das Verzeichnis {WG_DIR} ist nicht lesbar.{Style.RESET_ALL}")
-
-    # Prüfung, ob in das Verzeichnis geschrieben werden kann.
-    if os.access(Path(WG_DIR), os.W_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Das Verzeichnis {WG_DIR} ist nicht beschreibbar.{Style.RESET_ALL}")
-
-    # TODO Falls nicht: alle Dateien im Verzeichnis sollen entfernt werden, es wird eine neue Konfiguration angelegt.
+    check_dir(WG_DIR)
 
     # Einlesen der Konfigurationsdateien *.conf
 
@@ -297,7 +264,6 @@ def import_configurations(server):
 
     # Zu importierende Clientkonfigurationen anzeigen
     if DEBUG:
-        # TODO nur Dateinamen ausgeben
         print(f"{Fore.BLUE}Info: Neben der Serverkonfiguration wurden folgende Clientkonfigurationen gefunden: "
               f"{list_client_configuration_filenames}{Style.RESET_ALL}")
 

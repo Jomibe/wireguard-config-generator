@@ -11,16 +11,22 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 ? Erweiterbarkeit: Datenstruktur als abgeleitete Klasse von dict (kompliziert, wird von abgeraten) vs. dict (primitiv)
   vs. neue abgeleitete Klasse (schönste Lösung, umständliche Erweiterung)
 ! Schlüsselgenerierung: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
+! Syntaxprüfung mit pylint, Formatierung nach PEP 8
 """
 
-# Öffentliche Imports
-from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+# Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
+# pylint: disable=import-error
+
+# Imports aus Standardbibliotheken
 import sys
 
-# Interne Imports
+# Imports von Drittanbietern
+from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+
+# Eigene Imports
 from importing import import_configurations
-from management import print_configurations
-from ServerConfig import ServerConfig
+from config_management import print_configurations
+from server_config import ServerConfig
 from constants import DEBUG
 
 

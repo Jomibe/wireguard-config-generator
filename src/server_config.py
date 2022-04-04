@@ -2,6 +2,9 @@
 Enthält die Klassendefinition von Serverkonfigurationen.
 """
 
+# Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
+# pylint: disable=import-error
+
 # Interne Imports
 from constants import SERVER_CONFIG_FILENAME
 from constants import WG_DIR
@@ -12,6 +15,12 @@ class ServerConfig:
     Enthält alle möglichen Parameter der Serverkonfiguration.
     (vgl. https://github.com/pirate/wireguard-docs#config-reference)
     """
+
+    # Anzahl der Attribute wird durch die Parameterreferenz vorgegeben. Daher:
+    # pylint: disable=too-many-instance-attributes
+
+    # Eine Klasse ist für diesen Anwendungsfall am besten geeignet. Daher:
+    # pylint: disable=too-few-public-methods
 
     def __init__(self):
         self.name = ""  # Die Bezeichnung des Servers ("friendly name").

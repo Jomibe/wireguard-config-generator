@@ -1,13 +1,16 @@
-# Öffentliche Imports
-from colorama import Fore, Style
-
-# Interne Imports
-from constants import MINIMAL_CONFIG_PARAMETERS
-from ServerConfig import ServerConfig
-
 """
 Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfigurationen.
 """
+
+# Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
+# pylint: disable=import-error
+
+# Imports von Drittanbietern
+from colorama import Fore, Style
+
+# Eigene Imports
+from constants import MINIMAL_CONFIG_PARAMETERS
+from server_config import ServerConfig
 
 
 def print_configurations(server):
@@ -35,18 +38,23 @@ def print_configurations(server):
         print("Fehler: keine Clientkonfigurationen hinterlegt.")
         return
 
-    # Anzeige der Details pro Client: Bezeichnung, IP-Adresse, Anfang öffentlicher Schlüssel
-    print(f"{Style.BRIGHT}", end="")
-    print("{0:12} | {1:18}".format("Name", f"Privater Schlüssel{Style.RESET_ALL}"))
+    # Anzeige der Details pro Client, fettgedruckt: Bezeichnung, IP-Adresse, Anfang öffentlicher Schlüssel
+    print(f"{Style.BRIGHT}{'Name':12} | {'Privater Schlüssel':18}{Style.RESET_ALL}")
     for client in server.clients:
-        print("{0:12} | {1:18}".format(client.name[:12], client.privatekey[:15] + "..."))
+        print(f"{client.name[:12]:12} | {client.privatekey[:15] + '...':18}")
+
+    # def change_server_keypair(server):
+    """
+    Generiert ein neues Schlüsselpaar. Hinterlegt den privaten Schlüssel in der Serverkonfiguration und den öffentlichen
+    Schlüssel in alle Peer-Sektionen der Clientkonfigurationen.
+    """
 
 
-def check_configuration_integrity(server):
+# def check_configuration_integrity(server):
     """
     Prüft die importierten Konfigurationen auf Plausibilität und Vollständigkeit.
     """
 
-    # Prüfung, ob die privaten und öffentlichen Schlüssel der Clients zueinander passen.
+    # Prüfung, ob der öffentliche Schlüssel des Servers in allen Clientkonfigurationen korrekt hinterlegt ist.
 
     # Prüfung, ob IP-Adresskonflikte vorliegen.
