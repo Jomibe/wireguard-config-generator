@@ -15,6 +15,8 @@ from colorama import Fore, Style
 from client_config import ClientConfig
 from constants import CONFIG_PARAMETERS
 from constants import MINIMAL_CONFIG_PARAMETERS
+from constants import INTERFACE_CONFIG_PARAMETERS
+from constants import PEER_CONFIG_PARAMETERS
 from constants import DEBUG
 from server_config import ServerConfig
 import keys
@@ -94,9 +96,13 @@ def insert_client(server):
     client.address = address
 
     # Weitere Parameter abfragen, prüfen und einfügen
-    print("Bitte weitere Parameter eintragen. Ende mit Punkt.")
+    print(f"{Fore.BLUE}Info: Bitte weitere Parameter eintragen. Zurück mit{Style.RESET_ALL} .")
     while True:
-        input_line = input()
+        try:
+            input_line = input()
+        except UnicodeDecodeError:
+            print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+
         # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
         match = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
 
@@ -122,7 +128,7 @@ def insert_client(server):
         elif input_line == ".":
             break
         else:
-            print(f"{Fore.RED}Fehler: Ungültige Zeile eingegeben.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Fehler: Ungültige Eingabe.{Style.RESET_ALL}")
             # continue
     # Clientkonfiguration zur Serverkonfiguration hinzufügen
     server.clients.append(client)
@@ -175,35 +181,44 @@ def print_details(server, choice):
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
-    try:
-        client_id = int(choice)
-    except ValueError:
-        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
-        return
-    try:
-        if len(server.clients) <= client_id:
-            print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
-                  f"{Style.RESET_ALL}")
+    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion
+    peer_config_parameters = [parameter.lower() for parameter in PEER_CONFIG_PARAMETERS]
+
+    # Vorbereitung auf Generierung einer Liste mit allen Parameternamen der Interface-Sektion
+    interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
+
+    if choice == "0":
+        # Ausgabe der Konfiguration des Servers
+        for parameter in interface_config_parameters:
+            print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server, parameter)}")
+        # Ausgabe der Peer-Sektionen
+        for client in server.clients:
+            print("[Peer]")
+            print(f"# Name = {client.name}")
+            for parameter in peer_config_parameters:
+                print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(client, f'client_{parameter}')}")
+
+    else:
+        # Ausgabe der Konfiguration von server.clients[choice-1]
+        try:
+            client_id = int(choice)
+        except ValueError:
+            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
             return
-    except AttributeError:
-        print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
-        return
+        try:
+            if len(server.clients) < client_id:
+                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
+                      f"{Style.RESET_ALL}")
+                return
+        except AttributeError:
+            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
+            return
 
-    for parameter in config_parameters:
-        print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server.clients[client_id], parameter)}")
+        for parameter in config_parameters:
+            print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server.clients[client_id-1], parameter)}")
 
-    # def change_server_keypair(server):
+    # def change_client_keypair(server, choice):
     """
     Generiert ein neues Schlüsselpaar. Hinterlegt den privaten Schlüssel in der Serverkonfiguration und den öffentlichen
     Schlüssel in alle Peer-Sektionen der Clientkonfigurationen.
     """
-
-
-# def check_configuration_integrity(server):
-    """
-    Prüft die importierten Konfigurationen auf Plausibilität und Vollständigkeit.
-    """
-
-    # Prüfung, ob der öffentliche Schlüssel des Servers in allen Clientkonfigurationen korrekt hinterlegt ist.
-
-    # Prüfung, ob IP-Adresskonflikte vorliegen.
