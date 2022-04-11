@@ -130,7 +130,7 @@ def parse_and_import(peer):
                               f"{Fore.GREEN} hinterlegt{Style.RESET_ALL}")
                 else:
                     if DEBUG:
-                        print(f"{Fore.BLUE}Info: Es sind mehrere kommentierte Zeilen in der Datei vorhanden."
+                        print(f"{Fore.BLUE}Info: Es sind mehrere kommentierte Zeilen in der Datei vorhanden. "
                               f"Der erste Kommentar wurde als Bezeichnung interpretiert, dieser und folgende Kommentare"
                               f" werden ignoriert.{Style.RESET_ALL}")
                 continue
