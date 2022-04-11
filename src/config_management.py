@@ -10,7 +10,9 @@ from colorama import Fore, Style
 
 # Eigene Imports
 from constants import MINIMAL_CONFIG_PARAMETERS
+from constants import DEBUG
 from server_config import ServerConfig
+from keys import pubkey
 
 
 def print_configurations(server):
@@ -42,6 +44,17 @@ def print_configurations(server):
     print(f"{Style.BRIGHT}{'Name':12} | {'Privater Schlüssel':18}{Style.RESET_ALL}")
     for client in server.clients:
         print(f"{client.name[:12]:12} | {client.privatekey[:15] + '...':18}")
+
+
+def calculate_publickey(client):
+    """
+    Berechnet die öffentlichen Schlüssel der Clients anhand der privaten Schlüssel.
+    """
+    client.client_publickey = pubkey(client.privatekey)
+    if DEBUG:
+        print(f"{Fore.GREEN}Erfolg: Öffentlicher Schlüssel {Style.RESET_ALL}{client.client_publickey[:5]}..."
+              f"{Fore.GREEN} für privaten Schlüssel{Style.RESET_ALL} {client.privatekey[:5]}...{Fore.GREEN} "
+              f"berechnet und hinterlegt.{Style.RESET_ALL}")
 
     # def change_server_keypair(server):
     """

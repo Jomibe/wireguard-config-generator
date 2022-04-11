@@ -13,6 +13,7 @@ import re  # Für das Parsen von Konfigurationsdateien
 from colorama import Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
 
 # Eigene Imports
+from config_management import calculate_publickey
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
 from constants import DEBUG
@@ -221,13 +222,17 @@ def assign_peer_to_client(client_data, server):
         if DEBUG:
             print(f"{Fore.BLUE}Info: Zuordnung der Client-Sektion zu vorhandenen Clients{Style.RESET_ALL}")
         for client in server.clients:
-            if client.publickey == client_data.publickey:
+            if DEBUG:
+                print(f"{Fore.BLUE}Info: Vergleiche Schlüssel aus der Peer-Sektion{Style.RESET_ALL} "
+                      f"{client_data.publickey} {Fore.BLUE} mit hinterlegtem Schlüssel{Style.RESET_ALL} "
+                      f"{client.client_publickey} {Fore.BLUE}...")
+            if client.client_publickey == client_data.publickey:
                 if DEBUG:
                     print(f"{Fore.GREEN}Erfolg: Übereinstimmung gefunden{Style.RESET_ALL}")
                 # Daten übertragen
                 if DEBUG:
                     print(f"{Fore.BLUE}Info: Beginne mit der Übertragung der Parameter{Style.RESET_ALL}")
-                for parameter in MINIMAL_CONFIG_PARAMETERS:
+                for parameter in PEER_CONFIG_PARAMETERS:
                     # Die Parameter aus den Peer-Sektionen der Serverkonfiguration werden clientspezifisch gespeichert.
                     # Da in den Konfigurationen der Clients auch eine Peer-Sektion vorkommt, wird den Parametern aus
                     # der Serverkonfiguration ein 'client_' vorangestellt.
@@ -269,9 +274,6 @@ def import_configurations(server):
 
     # Konfigurationen importieren
 
-    # ..des Servers
-    parse_and_import(server)
-
     # ..der Clients
     for file in list_client_configuration_filenames:
 
@@ -284,9 +286,16 @@ def import_configurations(server):
         # Import der Parameter
         parse_and_import(server.clients[-1])
 
+        # Berechnung und Ergänzung des öffentlichen Schlüssels in der Konfiguration im Arbeitsspeicher. Notwendig für
+        # die spätere Zuordnung der Peer-Sektionen aus der Serverkonfiguration.
+        calculate_publickey(server.clients[-1])
+
         if DEBUG:
             print(f"{Fore.GREEN}Erfolg: Folgende Clients wurden importiert:{Style.RESET_ALL}")
         for client in server.clients:
             if DEBUG:
                 print(f"{Fore.GREEN}Client {Style.RESET_ALL}{str(client.name)}{Fore.GREEN} mit privatem Schlüssel "
                       f"{Style.RESET_ALL}{str(client.privatekey)}")
+
+    # ..des Servers
+    parse_and_import(server)

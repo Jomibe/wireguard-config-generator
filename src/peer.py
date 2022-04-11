@@ -19,3 +19,4 @@ class Peer:
         self.publickey = ""  # Öffentlicher Schlüssel des Clients.
         self.endpoint = ""  # Externe IP-Adresse oder Hostname des Clients aus Sicht des Servers.
         self.persistentkeepalive = ""  # Abstand zwischen zwei vom Server gesendeten Erreichbarkeitssignalen
+        self.allowedips = ""  # Zugelassene IP-Adressen des Verbindungspartners.

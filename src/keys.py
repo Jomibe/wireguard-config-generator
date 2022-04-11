@@ -1,4 +1,7 @@
 """
+Quelle: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
+Lizenz: GPL-3.0
+
 Name: WireGuard Cryptography Class
 Creator: K4YT3X
 Date Created: October 11, 2019
@@ -16,44 +19,37 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 
 
-class WireGuard:
-    """WireGuard Cryptography Class
+def genkey() -> str:
+    """generate WireGuard private key
 
-    generates WireGuard public key, private key, and PSK
+    Returns:
+        str: X25519 private key encoded in base64 format
     """
+    return base64.b64encode(
+        X25519PrivateKey.generate().private_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PrivateFormat.Raw,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+    ).decode()
 
-    @staticmethod
-    def genkey() -> str:
-        """generate WireGuard private key
 
-        Returns:
-            str: X25519 private key encoded in base64 format
-        """
-        return base64.b64encode(
-            X25519PrivateKey.generate().private_bytes(
-                encoding=serialization.Encoding.Raw,
-                format=serialization.PrivateFormat.Raw,
-                encryption_algorithm=serialization.NoEncryption(),
-            )
-        ).decode()
+def pubkey(privkey: str) -> str:
+    """convert WireGuard private key into public key
 
-    @staticmethod
-    def pubkey(privkey: str) -> str:
-        """convert WireGuard private key into public key
+    Args:
+        privkey (str): WireGuard X25519 private key
+            encoded in base64 format
 
-        Args:
-            privkey (str): WireGuard X25519 private key
-                encoded in base64 format
-
-        Returns:
-            str: corresponding public key of the provided
-                private key encoded as a base64 string
-        """
-        return base64.b64encode(
-            X25519PrivateKey.from_private_bytes(base64.b64decode(privkey.encode()))
-            .public_key()
-            .public_bytes(
-                encoding=serialization.Encoding.Raw,
-                format=serialization.PublicFormat.Raw,
-            )
-        ).decode()
+    Returns:
+        str: corresponding public key of the provided
+            private key encoded as a base64 string
+    """
+    return base64.b64encode(
+        X25519PrivateKey.from_private_bytes(base64.b64decode(privkey.encode()))
+        .public_key()
+        .public_bytes(
+            encoding=serialization.Encoding.Raw,
+            format=serialization.PublicFormat.Raw,
+        )
+    ).decode()
