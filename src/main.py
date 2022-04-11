@@ -13,6 +13,7 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 ! Schlüsselgenerierung: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
 ! Syntaxprüfung mit pylint, Formatierung nach PEP 8
 ! base64 Schlüssel enthalten 0-2 Gleichheitszeichen am Ende
+! Ausblick: Erweiterung, sodass mehrere Server verwaltet werden können, möglich
 """
 
 # Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
@@ -26,44 +27,94 @@ from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige f
 
 # Eigene Imports
 from importing import import_configurations
-from config_management import print_configurations
-from server_config import ServerConfig
+from config_management import print_configuration
+from config_management import change_client
+from config_management import delete_client
+from config_management import insert_client
+from config_management import print_details
 from constants import DEBUG
+
+
+def print_menu():
+    """
+    Gibt eine Informationsmeldung aus, welche Optionen im Hauptmenü zur Verfügung stehen.
+    """
+    print(f"{Style.BRIGHT}1{Style.RESET_ALL} --> Konfiguration vom Dateisystem in den Arbeitsspeicher importieren")
+    print(f"{Style.BRIGHT}2{Style.RESET_ALL} --> Übersicht und Details anzeigen")
+    print(f"{Style.BRIGHT}3{Style.RESET_ALL} --> Client hinzufügen")
+    print(f"{Style.BRIGHT}4{Style.RESET_ALL} --> Client entfernen")
+    print(f"{Style.BRIGHT}5{Style.RESET_ALL} --> Konfiguration ändern")
+    print(f"{Style.BRIGHT}6{Style.RESET_ALL} --> Schlüsselpaar eines Clients neu generieren")
+    print(f"{Style.BRIGHT}7{Style.RESET_ALL} --> Anpassung der Netzwerkgröße")
+    print(f"{Style.BRIGHT}8{Style.RESET_ALL} --> QR-Code für mobilen Client generieren")
+    print(f"{Style.BRIGHT}9{Style.RESET_ALL} --> Konfiguration vom Arbeitsspeicher auf das Dateisystem exportieren")
+    print("---------------------------------")
+    print(f"{Style.BRIGHT}?{Style.RESET_ALL} --> Diesen Text anzeigen")
+    print(f"{Style.BRIGHT}0{Style.RESET_ALL} --> Verlassen")
 
 
 def main():
     """
     Hauptmenü.
     """
-    server = ServerConfig()
-    init()  # Colorama passt sich an das Betriebssystem an
+    server = None
+    init()  # Colorama passt sich hiermit an das Betriebssystem an
+
+    print(f"{Style.BRIGHT}{Fore.RED}WireGuard{Fore.RESET} Konfigurationsverwalter{Style.RESET_ALL}")
+    print(f"{Style.BRIGHT}#################################{Style.RESET_ALL}")
+    print_menu()
 
     repeat = True
     while repeat:
-        print("Wireguard Konfigurationsverwalter")
-        print("#################################")
-        print(" 1 --> Übersicht erstellen")
-        print(" 2 --> Konfigurationen ändern")
-        print(" 3 --> Schlüsselpaar des Servers neu generieren")
-        print(" 4 --> Aktualisierung der Netzwerkgröße")
-        print(" 5 --> QR-Code generieren")
-        print("---------------------------------")
-        print(" 0 --> Verlassen")
-
         if DEBUG:
             print(f"{Fore.BLUE}Info: Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.{Style.RESET_ALL}")
 
-        option = input("? ")
+        option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
 
         if option == "1":
             if DEBUG:
                 print(f"{Fore.BLUE}Info: Importiere Verbindungen...{Style.RESET_ALL}")
-            import_configurations(server)
+            if server is not None:
+                choice = input(f"{Fore.YELLOW}Warnung: Konfiguration im Arbeitsspeicher überschreiben?{Style.RESET_ALL}"
+                               f" [j/n]")
+                if choice != "j":
+                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen{Style.RESET_ALL}")
+                    continue
+            server = import_configurations()
             if DEBUG:
                 print(f"{Fore.GREEN}Erfolg: Verbindungen importiert{Style.RESET_ALL}")
-            print_configurations(server)
+        elif option == "2":
+            print_configuration(server)
+            print(f"{Fore.BLUE}Info: Für Details {Style.RESET_ALL}ID{Fore.BLUE} eingeben, {Style.RESET_ALL}0{Fore.BLUE}"
+                  f" für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            while True:
+                choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
+                if choice == ".":
+                    break
+                print_details(server, choice)
+        elif option == "3":
+            insert_client(server)
+        elif option == "4":
+            choice = input("ID? ")
+            if choice == "0":
+                choice = input(f"{Fore.YELLOW}Warnung: Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?"
+                               f"{Style.RESET_ALL} (j/n)")
+                if choice != "j":
+                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen{Style.RESET_ALL}")
+                    continue
+                server = None
+                continue
+            delete_client(server, choice)
+        elif option == "5":
+            choice = input("ID? ")
+            change_client(server, choice)
+        elif option == "?":
+            print_menu()
         elif option == "0":
             repeat = False
+        else:
+            print(f"{Fore.RED}Fehler: Ungültige Eingabe. Für Hilfe {Style.RESET_ALL}?{Fore.RED} eingeben"
+                  f"{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":

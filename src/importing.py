@@ -136,6 +136,8 @@ def parse_and_import(peer):
                               f" werden ignoriert.{Style.RESET_ALL}")
                 continue
 
+            # TODO Refactoring: nach Erkennung des regex weiteren Prozess in Funktion auslagern und in insert_client()
+            #  wiederverwenden
             match = re.search("^([^ ]*) *= *(.*)", line, re.IGNORECASE)
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
             key = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[1].strip()
@@ -249,10 +251,12 @@ def assign_peer_to_client(client_data, server):
                   f"{Fore.YELLOW} prüfen.{Style.RESET_ALL}")
 
 
-def import_configurations(server):
+def import_configurations():
     """
     Importiert alle VPN-Konfigurationen im Wireguard-Verzeichnis.
     """
+
+    server = ServerConfig()
 
     check_dir(WG_DIR)
 
@@ -299,3 +303,5 @@ def import_configurations(server):
 
     # ..des Servers
     parse_and_import(server)
+
+    return server
