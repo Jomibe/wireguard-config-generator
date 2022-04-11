@@ -12,6 +12,7 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
   vs. neue abgeleitete Klasse (schönste Lösung, umständliche Erweiterung)
 ! Schlüsselgenerierung: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
 ! Syntaxprüfung mit pylint, Formatierung nach PEP 8
+! base64 Schlüssel enthalten 0-2 Gleichheitszeichen am Ende
 """
 
 # Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:

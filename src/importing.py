@@ -135,10 +135,10 @@ def parse_and_import(peer):
                               f" werden ignoriert.{Style.RESET_ALL}")
                 continue
 
-            match = re.search("^(.*) *= *(.*)", line, re.IGNORECASE)
+            match = re.search("^([^ ]*) *= *(.*)", line, re.IGNORECASE)
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
-            key = re.split("^(.*) *= *(.*)", line, re.IGNORECASE)[1].strip()
-            value = re.split("^(.*) *= *(.*)", line, re.IGNORECASE)[2].strip()
+            key = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[1].strip()
+            value = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[2].strip()
             if DEBUG:
                 print(f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
                       f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
