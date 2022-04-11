@@ -10,7 +10,7 @@ SERVER_CONFIG_FILENAME = "wg0.conf"
 
 # Quelle: https://docs.sweeting.me/s/wireguard#Overview
 # Parameter der Sektion Interface
-INTERFACE_CONFIG_PARAMETERS = ("Name", "Address", "ListenPort", "PrivateKey", "DNS", "Table", "MTU", "PreUp", "PostUp",
+INTERFACE_CONFIG_PARAMETERS = ("Address", "ListenPort", "PrivateKey", "DNS", "Table", "MTU", "PreUp", "PostUp",
                                "PreDown", "PostDown")
 
 # Parameter der Sektion Peer
