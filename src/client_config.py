@@ -36,4 +36,3 @@ class ClientConfig:
         self.client_endpoint = ""  # Externe IP-Adresse oder Hostname des Clients aus Sicht des Servers.
         self.client_persistentkeepalive = ""  # Abstand zwischen zwei vom Server gesendeten Erreichbarkeitssignalen
         self.client_allowedips = ""  # Zugelassene IP-Adressen des Verbindungspartners.
-

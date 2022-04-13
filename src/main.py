@@ -58,7 +58,7 @@ def main():
     Hauptmenü.
     """
     server = None
-    init()  # Colorama passt sich hiermit an das Betriebssystem an
+    init()  # Colorama passt sich an das Betriebssystem an
 
     print(f"{Style.BRIGHT}{Fore.RED}WireGuard{Fore.RESET} Konfigurationsverwalter{Style.RESET_ALL}")
     print(f"{Style.BRIGHT}#################################{Style.RESET_ALL}")
