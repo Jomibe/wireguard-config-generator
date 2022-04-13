@@ -188,6 +188,8 @@ def print_details(server, choice):
     interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
 
     if choice == "0":
+        # Der Name ist nicht Bestandteil der Konfigurationsparameter und wird daher gesondert ausgegeben
+        print(f"{Style.BRIGHT}Name{Style.RESET_ALL} = {getattr(server, 'name')}")
         # Ausgabe der Konfiguration des Servers
         for parameter in interface_config_parameters:
             print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server, parameter)}")
@@ -210,9 +212,13 @@ def print_details(server, choice):
                 print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
                       f"{Style.RESET_ALL}")
                 return
+        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
         except AttributeError:
             print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
             return
+
+        # Der Name ist nicht Bestandteil der Konfigurationsparameter und wird daher gesondert ausgegeben
+        print(f"{Style.BRIGHT}Name{Style.RESET_ALL} = {getattr(server.clients[client_id-1], 'name')}")
 
         for parameter in config_parameters:
             print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server.clients[client_id-1], parameter)}")
