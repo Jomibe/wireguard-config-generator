@@ -84,6 +84,10 @@ def main():
             if DEBUG:
                 print(f"{Fore.GREEN}Erfolg: Verbindungen importiert{Style.RESET_ALL}")
         elif option == "2":
+            if server is None:
+                print(f"{Fore.RED}Fehler: Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration "
+                      f"importieren oder anlegen.{Style.RESET_ALL}")
+                continue
             print_configuration(server)
             print(f"{Fore.BLUE}Info: Für Details {Style.RESET_ALL}ID{Fore.BLUE} eingeben, {Style.RESET_ALL}0{Fore.BLUE}"
                   f" für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
