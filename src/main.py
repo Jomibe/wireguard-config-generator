@@ -110,7 +110,9 @@ def main():
                 continue
             delete_client(server, choice)
         elif option == "5":
-            choice = input("ID? ")
+            print(f"{Fore.BLUE}Info: Bitte {Style.RESET_ALL}ID{Fore.BLUE} des Clients eingeben, {Style.RESET_ALL}0"
+                  f"{Fore.BLUE} für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
             change_client(server, choice)
         elif option == "?":
             print_menu()

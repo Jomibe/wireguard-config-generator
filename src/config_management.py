@@ -86,8 +86,8 @@ def insert_client(server):
     # Der öffentliche Schlüssel des Servers wird hinterlegt
     client.publickey = keys.pubkey(server.privatekey)
 
-    # Eingabe einer Bezeichnung
-    name = input("Bezeichnung? --> ")
+    # Eingabe eines Namens
+    name = input("Name? --> ")
     client.name = name
 
     # TODO Valide IP-Adresse muss ermittelt werden
@@ -157,26 +157,90 @@ def delete_client(server, choice):
 
 def change_client(server, choice):
     """
-    Änderung einer bestehenden Konfiguration. Der Parameter id bestimmt, welche Konfiguration angepasst wird,
+    Änderung einer bestehenden Konfiguration. Der Parameter choice bestimmt, welche Konfiguration angepasst wird.
     0 entspricht der Serverkonfiguration. Clients haben aufsteigende Nummern ab 1.
     """
+
+    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
+    config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
     print(f"Parameter {Fore.BLUE}ohne Wert eingeben für Ausgabe des derzeitigen Werts. {Style.RESET_ALL}Parameter = "
           f"Wert{Fore.BLUE} eingeben für Änderung des Werts. Zurück mit {Style.RESET_ALL}.")
 
-    while True:
-        input_line = input("? ")
+    if choice == "0":
+        # Serverkonfiguration soll geändert werden
 
-        if input_line == ".":
-            break
-        else:
-            print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
+        while True:
+            try:
+                input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Server) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+
+            # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
+            match = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+
+            if input_line == ".":
+                break
+            ### COPIED FROM create_client
+
+            # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
+            elif match:
+                # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
+                key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
+                value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
+                if DEBUG:
+                    print(
+                        f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
+                        f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+
+                if DEBUG:
+                    print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
+                          f"enthalten ist{Style.RESET_ALL}")
+
+                # Prüfe, ob der Parameter grundsätzlich gültig ist
+                if key.lower() in config_parameters:
+                    # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
+                    setattr(server, key.lower(), value)
+                    if DEBUG:
+                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+            ### END OF COPIED FROM create client
+            else:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
+
+    else:
+        # Eine der Clientkonfigurationen soll geändert werden
+
+        try:
+            client_id = int(choice)
+        except ValueError:
+            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+            return
+        try:
+            if len(server.clients) < client_id:
+                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
+                      f"{Style.RESET_ALL}")
+                return
+        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
+        except AttributeError:
+            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt. Neue Konfiguration importieren"
+                  f" oder erstellen.{Style.RESET_ALL}")
+            return
+
+        while True:
+            input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Client {client_id}) > {Style.RESET_ALL}")
+
+            if input_line == ".":
+                break
+            else:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
 
 def print_details(server, choice):
     """
     Gibt alle Parameter einer Konfiguration auf der Konsole aus.
     """
+
+    # TODO Bug: Parameternamen werden nur kleingeschrieben ausgegeben
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
