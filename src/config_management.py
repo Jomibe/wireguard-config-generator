@@ -181,7 +181,6 @@ def change_client(server, choice):
 
             if input_line == ".":
                 break
-            ### COPIED FROM create_client
 
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
             elif match:
@@ -203,7 +202,6 @@ def change_client(server, choice):
                     setattr(server, key.lower(), value)
                     if DEBUG:
                         print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
-            ### END OF COPIED FROM create client
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
