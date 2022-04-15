@@ -218,16 +218,17 @@ def change_client(server, choice):
                     print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
 
             elif match_key:
+                # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
+                key = re.split(RE_MATCH_KEY, input_line, re.IGNORECASE)[1].strip()
                 # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um eine ServerConfig handelt,
                 # in welcher mehrere Peer-Sektionen vorkommen, können nur Parameter der Interface-Sektion ausgegeben
                 # werden
-                # TODO BUG: Leerzeichen am Ende führen zu einer Nichterkennung des Parameters
-                if input_line.lower() in interface_config_parameters:
+                if key.lower() in interface_config_parameters:
                     # Falls ja, gebe den Wert aus
-                    print(getattr(server, input_line.lower()))
+                    print(getattr(server, key.lower()))
                 else:
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
-
+                    # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
@@ -260,6 +261,10 @@ def change_client(server, choice):
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
             match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
+            
+            if input_line == ".":
+                # Bei Eingabe von . zurück
+                break
 
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
             if match_key_value:
@@ -287,20 +292,17 @@ def change_client(server, choice):
 
             elif match_key:
                 # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
-                key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE) # TODO hier fehlt ein split()
+                key = re.split(RE_MATCH_KEY, input_line, re.IGNORECASE)[1].strip()
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um einen Client handelt, können
                 # alle Parameter in CONFIG_PARAMETERS ausgegeben werden.
                 # TODO BUG: Leerzeichen am Ende führen zu einer Nichterkennung des Parameters
-                if input_line.lower() in config_parameters:
+                if key.lower() in config_parameters:
                     # Falls ja, gebe den Wert aus
-                    print(getattr(server.clients[client_id-1], input_line.lower()))
+                    print(getattr(server.clients[client_id-1], key.lower()))
                 else:
                     # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
-
-            elif input_line == ".":
-                break
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
 
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
