@@ -29,10 +29,12 @@ from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige f
 from importing import import_configurations
 from config_management import print_configuration
 from config_management import change_client
+from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
 from config_management import print_details
 from constants import DEBUG
+from server_config import ServerConfig
 
 
 def print_menu():
@@ -41,8 +43,8 @@ def print_menu():
     """
     print(f"{Style.BRIGHT}1{Style.RESET_ALL} --> Konfiguration vom Dateisystem in den Arbeitsspeicher importieren")
     print(f"{Style.BRIGHT}2{Style.RESET_ALL} --> Übersicht und Details anzeigen")
-    print(f"{Style.BRIGHT}3{Style.RESET_ALL} --> Client hinzufügen")
-    print(f"{Style.BRIGHT}4{Style.RESET_ALL} --> Client entfernen")
+    print(f"{Style.BRIGHT}3{Style.RESET_ALL} --> Client hinzufügen/ Neue Konfiguration anlegen")
+    print(f"{Style.BRIGHT}4{Style.RESET_ALL} --> Client entfernen/ Konfiguration verwerfen")
     print(f"{Style.BRIGHT}5{Style.RESET_ALL} --> Konfiguration ändern")
     print(f"{Style.BRIGHT}6{Style.RESET_ALL} --> Schlüsselpaar eines Clients neu generieren")
     print(f"{Style.BRIGHT}7{Style.RESET_ALL} --> Anpassung der Netzwerkgröße")
@@ -97,6 +99,16 @@ def main():
                     break
                 print_details(server, choice)
         elif option == "3":
+            if server is None:
+                print(f"{Fore.RED}Fehler: keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im "
+                      f"Arbeitsspeicher angelegt werden? (j/n){Style.RESET_ALL}")
+                choice = input()
+
+                if choice == "j":
+                    server = create_server_config()
+                else:
+                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen.{Style.RESET_ALL}")
+                    continue
             insert_client(server)
         elif option == "4":
             choice = input("ID? ")

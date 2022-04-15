@@ -72,8 +72,6 @@ def insert_client(server):
     """
     Erstellt eine neue Clientkonfiguration. Werte für Parameter werden über die Kosole eingegeben.
     """
-    # TODO Bug: keine Parameterprüfung von ServerKonfiguration. Falls server leer ist, muss dies erst konfiguriert
-    #  werden.
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
@@ -165,6 +163,8 @@ def change_client(server, choice):
     Änderung einer bestehenden Konfiguration. Der Parameter choice bestimmt, welche Konfiguration angepasst wird.
     0 entspricht der Serverkonfiguration. Clients haben aufsteigende Nummern ab 1.
     """
+
+    # TODO BUG MINIMAL_CONFIG_PARAMETERS dürfen nicht "" lauten. Prüfung notwendig.
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
@@ -359,6 +359,29 @@ def print_details(server, choice):
 
         for parameter in config_parameters:
             print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server.clients[client_id-1], parameter)}")
+
+
+def create_server_config():
+    """
+    Erstelle eine neue Konfiguration.
+    """
+
+    server = ServerConfig()
+
+    # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
+    # privaten Schlüssels berechnet werden.
+    server.privatekey = keys.genkey()
+
+    # Eingabe eines Namens
+    name = input("Server anlegen (Name?) > ")
+    server.name = name
+
+    # Eingabe einer IP-Adresse
+    address = input("Server anlegen (IP-Adresse?) > ")
+    server.address = address
+
+    return server
+
 
     # def change_client_keypair(server, choice):
     """
