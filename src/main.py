@@ -112,7 +112,11 @@ def main():
         elif option == "5":
             print(f"{Fore.BLUE}Info: Bitte {Style.RESET_ALL}ID{Fore.BLUE} des Clients eingeben, {Style.RESET_ALL}0"
                   f"{Fore.BLUE} für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
-            choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
+            try:
+                choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                continue
             change_client(server, choice)
         elif option == "?":
             print_menu()
