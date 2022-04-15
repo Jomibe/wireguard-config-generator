@@ -261,11 +261,8 @@ def change_client(server, choice):
 
             match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
 
-            if input_line == ".":
-                break
-
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
-            elif match_key_value:
+            if match_key_value:
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
                 key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
                 value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
@@ -301,6 +298,9 @@ def change_client(server, choice):
                 else:
                     # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
                     print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+
+            elif input_line == ".":
+                break
 
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
