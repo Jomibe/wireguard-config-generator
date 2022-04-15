@@ -18,6 +18,8 @@ from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import INTERFACE_CONFIG_PARAMETERS
 from constants import PEER_CONFIG_PARAMETERS
 from constants import DEBUG
+from constants import RE_MATCH_KEY
+from constants import RE_MATCH_KEY_VALUE
 from server_config import ServerConfig
 import keys
 
@@ -105,13 +107,13 @@ def insert_client(server):
             print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
 
         # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
-        match = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+        match = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
         # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
         if match:
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
-            key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
-            value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
+            key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
+            value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
             if DEBUG:
                 print(f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
                       f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
@@ -185,9 +187,9 @@ def change_client(server, choice):
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
-            match_key_value = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+            match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
-            match_key = re.search("^([a-zA-Z]*)", input_line, re.IGNORECASE)
+            match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
 
             if input_line == ".":
                 break
@@ -195,8 +197,8 @@ def change_client(server, choice):
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter der Interface-Sektion ist
             elif match_key_value:
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
-                key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
-                value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
+                key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
+                value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
                 if DEBUG:
                     print(
                         f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
@@ -255,10 +257,9 @@ def change_client(server, choice):
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
-            match_key_value = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+            match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
-            # match_key = re.search("^([a-zA-Z]*)", input_line, re.IGNORECASE)
-            match_key = re.search(r"^ *([a-zA-Z]*) *", input_line, re.IGNORECASE)
+            match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
 
             if input_line == ".":
                 break
@@ -266,8 +267,8 @@ def change_client(server, choice):
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
             elif match_key_value:
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
-                key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
-                value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
+                key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
+                value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
                 if DEBUG:
                     print(
                         f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
@@ -289,7 +290,7 @@ def change_client(server, choice):
 
             elif match_key:
                 # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
-                key = re.search(r"^ *([a-zA-Z]*) *", input_line, re.IGNORECASE)
+                key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE) # TODO hier fehlt ein split()
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um einen Client handelt, können
                 # alle Parameter in CONFIG_PARAMETERS ausgegeben werden.

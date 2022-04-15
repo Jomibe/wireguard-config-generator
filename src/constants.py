@@ -24,3 +24,12 @@ DEBUG = False
 
 # Für den Betrieb notwendige Konfigurationsparameter
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")
+
+# Regulärer Ausdruck für die Erkennung eines einzelnen Parameters. Es dürfen Leerzeichen vor und hinter dem Parameter
+# stehen. Die erste Gruppe enthält den Parameter ohne äußere Leerzeichen.
+RE_MATCH_KEY = r"^ *([a-zA-Z]*) *"
+
+# Regulärer Ausdruck für die Erkennung eines Name-Wert Paares. Es dürfen Leerzeichen zwischen Name, dem
+# Zuweisungsoperator = und dem Wert stehen. Die erste Gruppe beinhaltet den Parameternamen ohne Leerzeichen. Die
+# zweite Gruppe beinhaltet den Wert ohne führende Leerzeichen.
+RE_MATCH_KEY_VALUE = r"^([^ ]*) *= *(.*)"
