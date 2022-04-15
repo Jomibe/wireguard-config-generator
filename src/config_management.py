@@ -87,19 +87,20 @@ def insert_client(server):
     client.publickey = keys.pubkey(server.privatekey)
 
     # Eingabe eines Namens
-    name = input("Name? --> ")
+    name = input("Client anlegen (Name?) > ")
     client.name = name
 
     # TODO Valide IP-Adresse muss ermittelt werden
     # Eingabe einer IP-Adresse
-    address = input("IP-Adresse? --> ")
+    address = input("Client anlegen (IP-Adresse?) > ")
     client.address = address
 
     # Weitere Parameter abfragen, prüfen und einfügen
     print(f"{Fore.BLUE}Info: Bitte weitere Parameter eintragen. Zurück mit{Style.RESET_ALL} .")
+    # TODO BUG: Falsche Parameter werden nicht bemängelt
     while True:
         try:
-            input_line = input()
+            input_line = input("Client anlegen (zusätzliche Parameter?) > ")
         except UnicodeDecodeError:
             print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
 
@@ -125,6 +126,8 @@ def insert_client(server):
                 setattr(client, key.lower(), value)
                 if DEBUG:
                     print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
         elif input_line == ".":
             break
         else:
@@ -164,11 +167,16 @@ def change_client(server, choice):
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
+    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion in
+    # Kleinbuchstaben
+    interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
+
     print(f"Parameter {Fore.BLUE}ohne Wert eingeben für Ausgabe des derzeitigen Werts. {Style.RESET_ALL}Parameter = "
           f"Wert{Fore.BLUE} eingeben für Änderung des Werts. Zurück mit {Style.RESET_ALL}.")
 
     if choice == "0":
-        # Serverkonfiguration soll geändert werden
+        # Serverkonfiguration soll geändert werden. Es ist nur möglich, die Interface-Sektion zu bearbeiten. Peer-
+        # Sektionen werden mit der Clientkonfiguration angepasst
 
         while True:
             try:
@@ -177,13 +185,15 @@ def change_client(server, choice):
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
-            match = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+            match_key_value = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+
+            match_key = re.search("^([a-zA-Z]*)", input_line, re.IGNORECASE)
 
             if input_line == ".":
                 break
 
-            # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
-            elif match:
+            # Prüfe, ob der Parameter ein unterstützter offizieller Parameter der Interface-Sektion ist
+            elif match_key_value:
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
                 key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
                 value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
@@ -197,11 +207,25 @@ def change_client(server, choice):
                           f"enthalten ist{Style.RESET_ALL}")
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist
-                if key.lower() in config_parameters:
+                if key.lower() in interface_config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(server, key.lower(), value)
                     if DEBUG:
                         print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                else:
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+
+            elif match_key:
+                # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um eine ServerConfig handelt,
+                # in welcher mehrere Peer-Sektionen vorkommen, können nur Parameter der Interface-Sektion ausgegeben
+                # werden
+                # TODO BUG: Leerzeichen am Ende führen zu einer Nichterkennung des Parameters
+                if input_line.lower() in interface_config_parameters:
+                    # Falls ja, gebe den Wert aus
+                    print(getattr(server, input_line.lower()))
+                else:
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
@@ -225,10 +249,58 @@ def change_client(server, choice):
             return
 
         while True:
-            input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Client {client_id}) > {Style.RESET_ALL}")
+            try:
+                input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Client {client_id}) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+
+            # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
+            match_key_value = re.search("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)
+
+            # match_key = re.search("^([a-zA-Z]*)", input_line, re.IGNORECASE)
+            match_key = re.search(r"^ *([a-zA-Z]*) *", input_line, re.IGNORECASE)
 
             if input_line == ".":
                 break
+
+            # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
+            elif match_key_value:
+                # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
+                key = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[1].strip()
+                value = re.split("^([^ ]*) *= *(.*)", input_line, re.IGNORECASE)[2].strip()
+                if DEBUG:
+                    print(
+                        f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
+                        f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+
+                if DEBUG:
+                    print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
+                          f"enthalten ist{Style.RESET_ALL}")
+
+                # Prüfe, ob der Parameter grundsätzlich gültig ist
+                if key.lower() in config_parameters:
+                    # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
+                    setattr(server.clients[client_id-1], key.lower(), value)
+                    if DEBUG:
+                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+
+                else:
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+
+            elif match_key:
+                # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
+                key = re.search(r"^ *([a-zA-Z]*) *", input_line, re.IGNORECASE)
+
+                # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um einen Client handelt, können
+                # alle Parameter in CONFIG_PARAMETERS ausgegeben werden.
+                # TODO BUG: Leerzeichen am Ende führen zu einer Nichterkennung des Parameters
+                if input_line.lower() in config_parameters:
+                    # Falls ja, gebe den Wert aus
+                    print(getattr(server.clients[client_id-1], input_line.lower()))
+                else:
+                    # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
+                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
