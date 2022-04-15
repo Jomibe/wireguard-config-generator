@@ -106,6 +106,8 @@ def main():
 
                 if choice == "j":
                     server = create_server_config()
+                    print(f"{Fore.BLUE}Info: Serverkonfiguration angelegt. Es folgt die Erstellung einer "
+                          f"Clientkonfiguration{Style.RESET_ALL}")
                 else:
                     print(f"{Fore.BLUE}Info: Vorgang abgebrochen.{Style.RESET_ALL}")
                     continue
