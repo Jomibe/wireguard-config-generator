@@ -29,6 +29,7 @@ from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige f
 from importing import import_configurations
 from config_management import print_configuration
 from config_management import change_client
+from config_management import change_client_keypair
 from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
@@ -132,6 +133,15 @@ def main():
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
                 continue
             change_client(server, choice)
+        elif option == "6":
+            print(f"{Fore.BLUE}Info: Bitte {Style.RESET_ALL}ID{Fore.BLUE} des Clients eingeben, {Style.RESET_ALL}0"
+                  f"{Fore.BLUE} für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            try:
+                choice = input(f"{Style.BRIGHT}Schlüsselpaar erneuern (Auswahl) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                continue
+            change_client_keypair(server, choice)
         elif option == "?":
             print_menu()
         elif option == "0":

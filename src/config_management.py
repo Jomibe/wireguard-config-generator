@@ -366,6 +366,8 @@ def create_server_config():
     Erstelle eine neue Konfiguration.
     """
 
+    # TODO Feature: weitere Parameter direkt bei der Erstellung eingeben
+
     server = ServerConfig()
 
     # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
@@ -383,8 +385,41 @@ def create_server_config():
     return server
 
 
-    # def change_client_keypair(server, choice):
+def change_client_keypair(server, choice):
     """
-    Generiert ein neues Schlüsselpaar. Hinterlegt den privaten Schlüssel in der Serverkonfiguration und den öffentlichen
-    Schlüssel in alle Peer-Sektionen der Clientkonfigurationen.
+    Generiert ein neues Schlüsselpaar für einen beliebigen Client. Hinterlegt den privaten Schlüssel eines Clients in
+    der Clientkonfiguration und den öffentlichen Schlüssel in der Serverkonfiguration. Hinterlegt den privaten Schlüssel
+    eines Servers in der Serverkonfiguration und den öffentlichen Schlüssel in allen Clientkonfigurationen.
     """
+
+    if choice == "0":
+        if DEBUG:
+            print(f"{Fore.BLUE}Info: Ändere das Schlüsselpaar des Servers.")
+
+        server.privatekey = keys.genkey()
+        publickey = keys.pubkey(server.privatekey)
+
+        for client in server.clients:
+            client.publickey = publickey
+
+    else:
+        try:
+            client_id = int(choice)
+        except ValueError:
+            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+            return
+        try:
+            if len(server.clients) < client_id:
+                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
+                      f"{Style.RESET_ALL}")
+                return
+        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
+        except AttributeError:
+            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
+            return
+
+        if DEBUG:
+            print(f"{Fore.BLUE}Info: Ändere das Schlüsselpaar des Clients {client_id}.")
+
+        server.clients[client_id-1].privatekey = keys.genkey()
+        server.clients[client_id-1].client_publickey = keys.pubkey(server.clients[client_id-1].privatekey)
