@@ -9,6 +9,7 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
+from ipaddress import ip_network
 from colorama import Fore, Style
 
 # Eigene Imports
@@ -20,6 +21,7 @@ from constants import PEER_CONFIG_PARAMETERS
 from constants import DEBUG
 from constants import RE_MATCH_KEY
 from constants import RE_MATCH_KEY_VALUE
+from networking import get_cidr_mask_from_hosts
 from server_config import ServerConfig
 import keys
 
@@ -423,3 +425,80 @@ def change_client_keypair(server, choice):
 
         server.clients[client_id-1].privatekey = keys.genkey()
         server.clients[client_id-1].client_publickey = keys.pubkey(server.clients[client_id-1].privatekey)
+
+
+def change_network_size(server, choice):
+    """
+    Diese Funktion ändert die Netzwerkgröße des VPN-Netzwerks. Der Parameter server übergibt der Funktion ein Objekt vom
+    Typ ServerConfig. Der Parameter number_of_hosts gibt an, wie viele Hosts (Clients + Server) das Netzwerk ausgelegt
+    werden soll. Anhand dieser Angabe wird die notwendige Netzwerkmaske berechnet und eine geeignete Netzwerkklasse
+    festgelegt.
+    """
+
+    # Parameterprüfungen
+    try:
+        number_of_hosts = int(choice)
+    except ValueError:
+        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+        return
+
+    if number_of_hosts < len(server.clients):
+        print(f"{Fore.RED}Fehler: Die Konfiguration im Arbeitsspeicher umfasst {Style.RESET_ALL}{len(server.clients)}"
+              f"{Fore.RED} Clients. Es kann keine Netzwerkgröße für eine geringere Anzahl eingestellt werden. Breche ab"
+              f"{Style.RESET_ALL}")
+        return
+
+    # CIDR-Maske berechnen
+    cidr_mask = get_cidr_mask_from_hosts(number_of_hosts)
+    if cidr_mask is None:  # Bei einem Fehler wird None zurückgegeben
+        print(f"{Fore.RED}Fehler: Breche ab.{Style.RESET_ALL}")
+        return
+    print(f"{Fore.GREEN}Erfolg: CIDR-Maske {cidr_mask} berechnet{Style.RESET_ALL}")
+
+    ip4_network_class = ""
+    # Netzklasse A, B oder C festlegen
+    if cidr_mask >= 24:
+        ip4_network_class = "c"
+    elif cidr_mask >= 16:
+        ip4_network_class = "b"
+    elif cidr_mask >= 8:
+        ip4_network_class = "a"
+    else:
+        print(f"Fehler: Ungültige CIDR-Maske für ein privates Netzwerk berechnet. Breche ab.")
+        return
+
+    print(f"{Fore.GREEN}Erfolg: Netzklasse {ip4_network_class.upper()} festgelegt{Style.RESET_ALL}")
+
+    ip4_network = ""
+    # Geeignetes IPv4-Netzwerk festlegen
+    if ip4_network_class == "a":
+        ip4_network = ip_network(f'10.0.0.0/{cidr_mask}')
+    elif ip4_network_class == "b":
+        ip4_network = ip_network(f'172.16.0.0/{cidr_mask}')
+    elif ip4_network_class == "c":
+        ip4_network = ip_network(f'192.168.0.0/{cidr_mask}')
+    else:
+        print(f"{Fore.RED}Fehler: Berechnung des Subnets ungültig. Breche ab.")
+        return
+
+    if DEBUG:
+        print(f"{Fore.GREEN}Erfolg: Neues Subnetz {Style.RESET_ALL}{ip4_network}{Fore.GREEN} wird verwendet"
+              f"{Style.RESET_ALL}")
+
+    list_of_host_addr = list(ip4_network.hosts())
+
+    # Dem Server die letzte IP-Adresse im Subnetz zuweisen
+    try:
+        print(f"{Fore.BLUE}Info: Weise Server die IP-Adresse {Style.RESET_ALL}{list_of_host_addr[-1]}{Fore.BLUE} zu.")
+        server.address = list_of_host_addr[-1]
+    except AttributeError:
+        print(f"{Fore.RED}Fehler: Es ist keine Serverkonfiguration vorhanden. Neue erstellen oder importieren. Breche "
+              f"ab.{Style.RESET_ALL}")
+
+    # Den Clients vom Anfang aufsteigende Adressen zuweisen
+    for i in range(len(server.clients)):
+        server.clients[i].address = list_of_host_addr[i]
+        if DEBUG:
+            print(f"{Fore.BLUE}Info: Weise Client mit privatem Schlüssel {Style.RESET_ALL}"
+                  f"{server.clients[i].privatekey:5}...{Fore.BLUE} die "
+                  f"IP-Adresse {Style.RESET_ALL}{list_of_host_addr[i]}{Fore.BLUE} zu.{Style.RESET_ALL}")

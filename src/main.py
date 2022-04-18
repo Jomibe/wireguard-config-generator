@@ -30,6 +30,7 @@ from importing import import_configurations
 from config_management import print_configuration
 from config_management import change_client
 from config_management import change_client_keypair
+from config_management import change_network_size
 from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
@@ -142,6 +143,15 @@ def main():
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
                 continue
             change_client_keypair(server, choice)
+        elif option == "7":
+            print(f"{Fore.BLUE}Info: Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?"
+                  f"{Style.RESET_ALL}")
+            try:
+                choice = input(f"{Style.BRIGHT}Netzwerkgröße anpassen (Auswahl) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                continue
+            change_network_size(server, choice)
         elif option == "?":
             print_menu()
         elif option == "0":
