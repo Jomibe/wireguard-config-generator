@@ -20,6 +20,7 @@ from constants import DEBUG
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import SERVER_CONFIG_FILENAME
 from constants import PEER_CONFIG_PARAMETERS
+from debugging import info, warn, err, erfolg
 from client_config import ClientConfig
 from file_management import check_file
 from file_management import check_dir
@@ -53,46 +54,40 @@ def parse_and_import(peer):
     is_server = False
     if isinstance(peer, ServerConfig):
         is_server = True
-        if DEBUG:
-            print(f"{Fore.GREEN}Erfolg: Serverkonfiguration erkannt{Style.RESET_ALL}")
-            if peer.filename != WG_DIR + SERVER_CONFIG_FILENAME:
-                print(f"{Fore.BLUE}Hinweis: Serverkonfiguration {Style.RESET_ALL}{peer.filename}{Fore.BLUE} entspricht "
-                      f"nicht dem Standard {Style.RESET_ALL}{WG_DIR + SERVER_CONFIG_FILENAME}")
+        erfolg("Serverkonfiguration erkannt")
+        if peer.filename != WG_DIR + SERVER_CONFIG_FILENAME:
+            info(f"Serverkonfiguration" ,peer.filename, "entspricht nicht dem Standard",
+                 WG_DIR + SERVER_CONFIG_FILENAME)
     elif isinstance(peer, ClientConfig):
         if DEBUG:
-            print(f"{Fore.GREEN}Erfolg: Clientkonfiguration erkannt{Style.RESET_ALL}")
+            erfolg("Clientkonfiguration erkannt")
     else:
-        print(f"{Fore.RED}Fehler: Ungültige Datenstruktur vom Typ {Style.RESET_ALL}{type(peer)}{Fore.RED} übergeben"
-              f"{Style.RESET_ALL}")
+        err("Ungültige Datenstruktur vom Typ", type(peer), "übergeben.")
 
     # Öffnen der Datei
     with open(peer.filename, encoding='utf-8') as config:
         # Datei Zeile für Zeile einlesen
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Lese Datei {Style.RESET_ALL}{peer.filename}")
+        info("Lese Datei", peer.filename)
         for line in config:
             if DEBUG:
                 # Zeile ohne \n ausgeben
-                print(f"{Fore.BLUE}Info: Lese Zeile{Style.RESET_ALL}", line.replace('\n', ''))
+                info("Lese Zeile", line.replace('\n', ''))
             # Die Zeile wird auf Bestandteile der Syntax untersucht: leer, Kommentar, Sektion oder Name-Wert Paar
             match = re.search(r'^ *$', line)  # Leere Zeile darf keine oder nur Leerzeichen enthalten
             # Bei leerer Zeile: fahre fort
             if match:
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Zeile enthält keine Konfiguration.{Style.RESET_ALL}")
+                erfolg("Zeile enthält keine Konfiguration.")
                 continue
 
             match = re.search(r'^\[.*]$', line)
             # Bei Sektion: Unterscheide zwischen Server und Client. Client: fahre fort. Server: Importiere Daten in die
             # Datenstruktur des Clients.
             if match:
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Zeile leitet eine INI-Sektion ein{Style.RESET_ALL}")
+                erfolg("Zeile leitet eine INI-Sektion ein.")
 
                 match = re.search(r'^ *\[Peer] *$', line, re.IGNORECASE)
                 if match and is_server:
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Zeile leitet eine Peer-Sektion ein{Style.RESET_ALL}")
+                    erfolg("Zeile leitet eine Peer-Sektion ein.")
 
                     # Die Daten werden zeilenweise eingelesen. Eine Peer-Sektion besteht aus unbekannt vielen Zeilen.
                     # Um die Daten zu einem peer zu sammeln, muss also zeilenübergreifend gearbeitet werden. Die Daten
@@ -120,20 +115,14 @@ def parse_and_import(peer):
             # Die Bezeichnung ist kein offizieller Parameter (aber ein INI-Standard) und wird daher gesondert
             # behandelt.
             if match:
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Kommentar erkannt{Style.RESET_ALL}")
+                erfolg("Kommentar erkannt")
                 if peer.name == "":
                     # Rauten (#), Leerzeichen sowie ein ggf. voranstehendes 'Name =' werden entfernt
-                    peer.name = line.replace('\n', '').replace("Name", "").replace("=", "").replace(
-                        "#", "").strip()
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Bezeichnung {Style.RESET_ALL}{peer.name}"
-                              f"{Fore.GREEN} hinterlegt{Style.RESET_ALL}")
+                    peer.name = line.replace('\n', '').replace("Name", "").replace("=", "").replace("#", "").strip()
+                    erfolg("Bezeichnung", peer.name, "hinterlegt.")
                 else:
-                    if DEBUG:
-                        print(f"{Fore.BLUE}Info: Es sind mehrere kommentierte Zeilen in der Datei vorhanden. "
-                              f"Der erste Kommentar wurde als Bezeichnung interpretiert, dieser und folgende Kommentare"
-                              f" werden ignoriert.{Style.RESET_ALL}")
+                    info("Es sind mehrere kommentierte Zeilen in der Datei vorhanden. Der erste Kommentar wurde als "
+                         "Bezeichnung interpretiert, dieser und folgende Kommentare werden ignoriert.")
                 continue
 
             # TODO Refactoring: nach Erkennung des regex weiteren Prozess in Funktion auslagern und in insert_client()
@@ -142,33 +131,25 @@ def parse_and_import(peer):
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
             key = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[1].strip()
             value = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[2].strip()
-            if DEBUG:
-                print(f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
-                      f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+            erfolg("Parameter", key, "mit Wert", value, "erkannt.")
             # Bei Name-Wert Paar: Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
             if match:
-                if DEBUG:
-                    print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
-                          f"enthalten ist")
+                info("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.")
                 # Prüfe, ob der Parameter Teil einer Peer-Sektion einer Serverkonfiguration ist
                 if key.lower() in peer_config_parameters and is_server:
                     # Falls ja, Parameter nicht im peer-Objekt hinterlegen, sondern im client_data Objekt vorhalten
                     setattr(client_data, key.lower(), value)
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Ein Parameter aus einer Server-Peer Sektion wurde für die spätere "
-                              f"Verarbeitung zurückgestellt.")
+                    erfolg("Ein Parameter aus einer Server-Peer Sektion wurde für die spätere Verarbeitung "
+                           "zurückgestellt.")
 
                 # Sonst: prüfe, ob der Parameter grundsätzlich gültig ist
                 elif key.lower() in config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(peer, key.lower(), value)
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                    erfolg("Parameter hinterlegt.")
                     # "Streiche" den Parameter von der Liste der notwendigen Parameter, falls vorhanden
                     if key.lower() in minimal_parameters:
-                        if DEBUG:
-                            print(f"{Fore.GREEN}Erfolg: Parameter war in der Liste der notwendigen Parameter "
-                                  f"enthalten {Style.RESET_ALL}")
+                        erfolg("Parameter", key.lower(), "war in der Liste der notwendigen Parameter enthalten")
                         minimal_parameters.remove(key.lower())
 
                 # Falls nein: gebe eine entsprechende Warnung aus
@@ -221,26 +202,20 @@ def assign_peer_to_client(client_data, server):
         # Vorbereitung für den Programmablauf nach erfolgreicher Übertragung der Parameter in das server-Objekt
         success = False
 
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Zuordnung der Client-Sektion zu vorhandenen Clients{Style.RESET_ALL}")
+        info("Zuordnung der Client-Sektion zu vorhandenen Clients.")
         for client in server.clients:
-            if DEBUG:
-                print(f"{Fore.BLUE}Info: Vergleiche Schlüssel aus der Peer-Sektion{Style.RESET_ALL} "
-                      f"{client_data.publickey} {Fore.BLUE} mit hinterlegtem Schlüssel{Style.RESET_ALL} "
-                      f"{client.client_publickey} {Fore.BLUE}...")
+            info("Vergleiche Schlüssel aus der Peer-Sektion", client_data.publickey, "mit hinterlegtem Schlüssel",
+                 client.client_publickey, "...")
             if client.client_publickey == client_data.publickey:
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Übereinstimmung gefunden{Style.RESET_ALL}")
+                erfolg("Übereinstimmung gefunden")
                 # Daten übertragen
-                if DEBUG:
-                    print(f"{Fore.BLUE}Info: Beginne mit der Übertragung der Parameter{Style.RESET_ALL}")
+                info("Beginne mit der Übertragung der Parameter")
                 for parameter in PEER_CONFIG_PARAMETERS:
                     # Die Parameter aus den Peer-Sektionen der Serverkonfiguration werden clientspezifisch gespeichert.
                     # Da in den Konfigurationen der Clients auch eine Peer-Sektion vorkommt, wird den Parametern aus
                     # der Serverkonfiguration ein 'client_' vorangestellt.
                     setattr(client, "client_" + parameter.lower(), getattr(client_data, parameter.lower()))
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Parameter erfolgreich übernommen")
+                erfolg("Parameter erfolgreich übernommen")
                 success = True
 
         if not success:
@@ -272,9 +247,8 @@ def import_configurations():
         print(f"{Fore.YELLOW}Warnung: Keine Serverkonfiguration wg0.conf gefunden.{Style.RESET_ALL}")
 
     # Zu importierende Clientkonfigurationen anzeigen
-    if DEBUG:
-        print(f"{Fore.BLUE}Info: Neben der Serverkonfiguration wurden folgende Clientkonfigurationen gefunden: "
-              f"{list_client_configuration_filenames}{Style.RESET_ALL}")
+    info("Neben der Serverkonfiguration wurden folgende Clientkonfigurationen gefunden:",
+         f"{list_client_configuration_filenames}")
 
     # Konfigurationen importieren
 
@@ -294,8 +268,7 @@ def import_configurations():
         # die spätere Zuordnung der Peer-Sektionen aus der Serverkonfiguration.
         calculate_publickey(server.clients[-1])
 
-        if DEBUG:
-            print(f"{Fore.GREEN}Erfolg: Folgende Clients wurden importiert:{Style.RESET_ALL}")
+        erfolg("Folgende Clients wurden importiert:")
         for client in server.clients:
             if DEBUG:
                 print(f"{Fore.GREEN}Client {Style.RESET_ALL}{str(client.name)}{Fore.GREEN} mit privatem Schlüssel "

@@ -36,7 +36,7 @@ from config_management import delete_client
 from config_management import insert_client
 from config_management import print_details
 from constants import DEBUG
-from debugging import info, warn, err
+from debugging import info, warn, err, erfolg
 from server_config import ServerConfig
 
 
@@ -71,14 +71,12 @@ def main():
 
     repeat = True
     while repeat:
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.{Style.RESET_ALL}")
+        info("Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.")
 
         option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
 
         if option == "1":
-            if DEBUG:
-                print(f"{Fore.BLUE}Info: Importiere Verbindungen...{Style.RESET_ALL}")
+            info("Importiere Verbindungen...")
             if server is not None:
                 choice = input(f"{Fore.YELLOW}Warnung: Konfiguration im Arbeitsspeicher überschreiben?{Style.RESET_ALL}"
                                f" [j/n]")
@@ -86,8 +84,7 @@ def main():
                     print(f"{Fore.BLUE}Info: Vorgang abgebrochen{Style.RESET_ALL}")
                     continue
             server = import_configurations()
-            if DEBUG:
-                print(f"{Fore.GREEN}Erfolg: Verbindungen importiert{Style.RESET_ALL}")
+            erfolg("Verbindungen importiert.")
         elif option == "2":
             if server is None:
                 print(f"{Fore.RED}Fehler: Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration "
