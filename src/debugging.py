@@ -34,7 +34,7 @@ def info(*message):
 
             print(part, end=" ")
 
-        print("")  # Abschließender Zeilenumbruch
+        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
 
 
 def warn(*message):
@@ -57,7 +57,7 @@ def warn(*message):
 
             print(part, end=" ")
 
-        print("")  # Abschließender Zeilenumbruch
+        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
 
 
 def err(*message):
@@ -80,4 +80,27 @@ def err(*message):
 
             print(part, end=" ")
 
-        print("")  # Abschließender Zeilenumbruch
+        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
+
+
+def erfolg(*message):
+    """
+    Gibt die Inhalte von message in blauer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
+    """
+    if DEBUG:
+
+        mode = 0  # 0 = keine Farbe, 1 = blaue Farbe
+
+        print(f"{Fore.GREEN}Erfolg: ", end="")
+
+        for part in message:
+            if mode == 0:
+                print(f"{Fore.GREEN}", end="")
+                mode = 1
+            else:
+                print(f"{Style.RESET_ALL}", end="")
+                mode = 0
+
+            print(part, end=" ")
+
+        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
