@@ -30,7 +30,7 @@ from peer import Peer
 def parse_and_import(peer):
     """
     Schreibt die Werte der Parameter einer Datei in die Datenstruktur. peer kann ein Client oder Server sein.
-    Der Parameter filename von peer muss einen validen Pfad zu einer Konfigurationsdatei enthalten.
+    Der Parameter peer.filename von peer muss einen validen Pfad zu einer Konfigurationsdatei enthalten.
     """
 
     # Parameterprüfungen
