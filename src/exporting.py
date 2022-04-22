@@ -49,36 +49,38 @@ def export_configurations(server):
         # Sicherungsverzeichnis umbenennen, alte Datensicherung überschreiben
         os.rename(SAVEDIR_NEW, SAVEDIR)
 
-    # Verzeichnis leeren
+    # Verzeichnis leeren, falls Dateien noch existieren
     for file in files:
-        os.remove(WG_DIR + file)
+        try:
+            os.remove(WG_DIR + file)
+        except FileNotFoundError:
+            continue
 
     # Serverkonfiguration schreiben
     # TODO refactoring mit Ausgabefunktion, doppelten Code vermeiden: Eine Funktion gibt die Konfiguration als String
     #  zurück, welcher auf die Konsole oder in die Datei geschrieben wird
     f = open(WG_DIR + SERVER_CONFIG_FILENAME, "w")
-    f.write("# Serverkonfiguration")
-    f.write()
-    f.write("[Interface]")
+    f.write("# Serverkonfiguration\n\n")
+    f.write("[Interface]\n")
 
     for parameter in interface_config_parameters:
         if getattr(server, parameter.lower()) != "":
-            f.write(parameter + " = " + getattr(server, parameter.lower()))
+            f.write(parameter + " = " + getattr(server, parameter.lower()) + "\n")
 
     # Clients hinterlegen: Bezeichnung, öffentlicher Schlüssel, IP-Adresse im VPN
     for client in server.clients:
-        f.write("[Peer]")
+        f.write("\n[Peer]\n")
         if client.name != "":
-            f.write("# Name = " + client.name)
+            f.write("# Name = " + client.name + "\n")
         for parameter in peer_config_parameters:
             if getattr(client, "client_" + parameter.lower()) != "":
-                f.write(parameter + " = " + getattr(client, "client_" + parameter.lower()))
+                f.write(parameter + " = " + getattr(client, "client_" + parameter.lower()) + "\n")
 
     f.close()
 
     # Clientkonfigurationen schreiben
     # TODO Was passiert mit Clients ohne Attribut filename und name?
-    for i in len(server.clients):
+    for i in range(len(server.clients)):
         client = server.clients[i]
         if client.filename != "":
             f = open(WG_DIR + client.filename, "w")
@@ -89,17 +91,16 @@ def export_configurations(server):
             # TODO Dateien aus der Datensicherung müssen wiederhergestellt werden
             return
 
-        f.write("#Interface")
+        f.write("[Interface]\n")
         if client.name != "":
-            f.write("# Name = " + client.name)
+            f.write("# Name = " + client.name + "\n")
         for parameter in interface_config_parameters:
             if getattr(client, parameter.lower()) != "":
-                f.write(parameter + " = " + getattr(client, parameter.lower()))
+                f.write(parameter + " = " + getattr(client, parameter.lower()) + "\n")
 
-        f.write()
-        f.write("[Peer]")
+        f.write("\n[Peer]\n")
         for parameter in peer_config_parameters:
-            if getattr(client, parameter.lower() != ""):
-                f.write(parameter + " = " + getattr(client, parameter.lower()))
+            if getattr(client, parameter.lower()) != "":
+                f.write(parameter + " = " + getattr(client, parameter.lower()) + "\n")
 
-        f.write()
+        f.write("\n")
