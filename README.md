@@ -17,9 +17,8 @@ Die Software wird über die Konsole bedient. Die bestehenden Dateien werden eing
 
 ### Beispiel Serverkonfigurationsdatei:
 ```
-# Serverkonfiguration
-
 [Interface]
+# Name = Serverkonfiguration
 Address = 10.10.10.1/24
 ListenPort = 12345
 PrivateKey = cHZQta30/Z4Zijb/nCeYxkkR/u8ep1vwGuy5xYT2708=
