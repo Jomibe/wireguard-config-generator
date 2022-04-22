@@ -22,7 +22,7 @@ CONFIG_PARAMETERS = INTERFACE_CONFIG_PARAMETERS + PEER_CONFIG_PARAMETERS
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
 DEBUG = False
 
-# Für den Betrieb notwendige Konfigurationsparameter
+# Für den Betrieb notwendige Konfigurationsparameter. Hinterlegt in kleinbuchstaben.
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")
 
 # Regulärer Ausdruck für die Erkennung eines einzelnen Parameters. Es dürfen Leerzeichen vor und hinter dem Parameter
