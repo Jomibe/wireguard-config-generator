@@ -14,15 +14,19 @@ from colorama import Fore, Style
 from constants import DEBUG
 
 
-def info(*message):
+def info(*message, end=None, quiet=None, no_space=None):
     """
-    Gibt die Inhalte von message in blauer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
+    Gibt die Inhalte von message in abwechselnd in blauer und weißer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
+    end gibt das Zeilenende für print() an.
+    Wenn quiet=True, dann wird Info: weggelassen.
+    Wenn no_space=True, werden keine Leerzeichen zwischen den Parametern ausgegeben
     """
     if DEBUG:
 
         mode = 0  # 0 = keine Farbe, 1 = blaue Farbe
 
-        print(f"{Fore.BLUE}Info: ", end="")
+        if quiet is not True:
+            print(f"{Fore.BLUE}Info: ", end="")
 
         for part in message:
             if mode == 0:
@@ -32,9 +36,16 @@ def info(*message):
                 print(f"{Style.RESET_ALL}", end="")
                 mode = 0
 
-            print(part, end=" ")
+            if no_space:
+                print(part, end="")
+            else:
+                print(part, end=" ")
 
-        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
+        # Zeilenende kann durch den Parameter end beeinflusst werden
+        if end is None:
+            print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
+        else:
+            print(f"{Style.RESET_ALL}", end=end)  # Parameter end wird an print() weitergegeben
 
 
 def warn(*message):
