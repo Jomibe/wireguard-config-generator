@@ -27,12 +27,12 @@ def export_configurations(server):
     Exportiert die Konfigurationen aus dem Arbeitsspeicher in das Wireguard-Verzeichnis.
     """
 
-    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion in
-    # Kleinbuchstaben
-    interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
+    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
+    # von CamelCase
+    interface_config_parameters = [parameter for parameter in INTERFACE_CONFIG_PARAMETERS]
 
-    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion
-    peer_config_parameters = [parameter.lower() for parameter in PEER_CONFIG_PARAMETERS]
+    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion. Verwendung von CamelCase
+    peer_config_parameters = [parameter for parameter in PEER_CONFIG_PARAMETERS]
 
     # Prüfung, ob Konfigurationen vorhanden sind
     files = os.listdir(WG_DIR)
