@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 # Imports von Drittanbietern
+from shutil import rmtree
 
 # Eigene Imports
 from constants import DISABLE_BACKUP
@@ -57,7 +58,9 @@ def export_configurations(server):
 
         # Sicherungsverzeichnis umbenennen, alte Datensicherung überschreiben
         info("Ordner", WG_DIR + SAVEDIR_NEW, "wird umbenannt in", WG_DIR + SAVEDIR)
-        os.rename(WG_DIR + SAVEDIR_NEW, WG_DIR + SAVEDIR)
+        # Wenn SAVEDIR Dateien enthält, kann os.replace diesen nicht entfernen
+        rmtree(WG_DIR + SAVEDIR, ignore_errors=True)
+        os.replace(Path(WG_DIR + SAVEDIR_NEW), Path(WG_DIR + SAVEDIR))  # os.replace funktioniert unter Unix und Windows
 
     # Verzeichnis leeren, falls Dateien noch existieren
     for file in files:
