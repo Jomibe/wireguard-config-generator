@@ -17,27 +17,28 @@ Die Software wird über die Konsole bedient. Die bestehenden Dateien werden eing
 
 ### Beispiel Serverkonfigurationsdatei:
 ```
-[Interface]
-PrivateKey = ...
-ListenPort = 12345
-Address = 10.10.10.1/24
+# Serverkonfiguration
 
-# Mein iPhone
+[Interface]
+Address = 10.10.10.1/24
+ListenPort = 12345
+PrivateKey = cHZQta30/Z4Zijb/nCeYxkkR/u8ep1vwGuy5xYT2708=
+
 [Peer]
-PublicKey = ...
+# Name = Mein iPhone
 AllowedIPs = 10.10.10.2/32
+PublicKey = Ew8gAiOdwOIoltpCwDYrLFzMJb/Jl3oB7GO1k4JqgzY=
 ```
 
 ### Beispiel Clientkonfigurationsdatei:
 ```
-# Mein iPhone
-
 [Interface]
-PrivateKey = ...
+# Name = Mein iPhone
 Address = 10.10.10.2/32
+PrivateKey = kC/Wd4Ws65DX4FXCsZBkHdNAbKVpe86JJbIA2LK0slY=
 
 [Peer]
-PublicKey = ...
-Endpoint = mein-vpn-server:12345
 AllowedIPs = 10.10.10.1
+Endpoint = mein-vpn-server:12345
+PublicKey = 0dAwIB3Ji96GYdlesA+iCNxhB7NElkFf7DZ4GWyaEFI=
 ```
