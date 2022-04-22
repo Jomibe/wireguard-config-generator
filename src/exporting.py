@@ -103,4 +103,4 @@ def export_configurations(server):
             if getattr(client, parameter.lower()) != "":
                 f.write(parameter + " = " + getattr(client, parameter.lower()) + "\n")
 
-        f.write("\n")
+        f.close()
