@@ -33,3 +33,13 @@ RE_MATCH_KEY = r"^ *([a-zA-Z]*) *"
 # Zuweisungsoperator = und dem Wert stehen. Die erste Gruppe beinhaltet den Parameternamen ohne Leerzeichen. Die
 # zweite Gruppe beinhaltet den Wert ohne führende Leerzeichen.
 RE_MATCH_KEY_VALUE = r"^([^ ]*) *= *(.*)"
+
+# Absoluter Ordnerpfad für die Datensicherung. Standardmäßig unterhalb von WG_DIR.
+SAVEDIR = WG_DIR + ".wg_conf_bak/"
+
+# Absoluter Ordnerpfad für die Datensicherung. Wird nach erfolgreicher Erstellung in SAVEDIR umbenannt, um Datenverlust
+# bei einem Fehler im Export vorzubeugen. Standardmäßig unterhalb von WG_DIR.
+SAVEDIR_NEW = WG_DIR + ".wg_conf_bak_new/"
+
+# Datensicherung beim Export deaktivieren
+DISABLE_BACKUP = False

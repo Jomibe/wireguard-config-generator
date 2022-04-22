@@ -37,6 +37,7 @@ from config_management import insert_client
 from config_management import print_details
 from constants import DEBUG
 from debugging import info, warn, err, erfolg
+from exporting import export_configurations
 from server_config import ServerConfig
 
 
@@ -150,6 +151,8 @@ def main():
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
                 continue
             change_network_size(server, choice)
+        elif option == "9":
+            export_configurations(server)
         elif option == "?":
             print_menu()
         elif option == "0":
