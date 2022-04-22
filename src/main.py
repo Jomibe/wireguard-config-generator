@@ -36,9 +36,9 @@ from config_management import change_network_size
 from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
-from config_management import print_details
 from debugging import console
 from exporting import export_configurations
+from exporting import config_to_str
 
 
 def print_menu():
@@ -98,7 +98,7 @@ def main():
                 choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
                 if choice == ".":
                     break
-                print_details(server, choice)
+                print(config_to_str(server, choice))
         elif option == "3":
             if server is None:
                 console("Keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im Arbeitsspeicher angelegt "

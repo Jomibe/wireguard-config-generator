@@ -17,7 +17,6 @@ from client_config import ClientConfig
 from constants import CONFIG_PARAMETERS
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import INTERFACE_CONFIG_PARAMETERS
-from constants import PEER_CONFIG_PARAMETERS
 from constants import DEBUG
 from constants import RE_MATCH_KEY
 from constants import RE_MATCH_KEY_VALUE
@@ -309,58 +308,6 @@ def change_client(server, choice):
             else:
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
-
-def print_details(server, choice):
-    """
-    Gibt alle Parameter einer Konfiguration auf der Konsole aus.
-    """
-
-    # TODO Bug: Parameternamen werden nur kleingeschrieben ausgegeben
-
-    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
-    config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
-
-    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion
-    peer_config_parameters = [parameter.lower() for parameter in PEER_CONFIG_PARAMETERS]
-
-    # Vorbereitung auf Generierung einer Liste mit allen Parameternamen der Interface-Sektion
-    interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
-
-    if choice == "0":
-        # Der Name ist nicht Bestandteil der Konfigurationsparameter und wird daher gesondert ausgegeben
-        print(f"{Style.BRIGHT}Name{Style.RESET_ALL} = {getattr(server, 'name')}")
-        # Ausgabe der Konfiguration des Servers
-        for parameter in interface_config_parameters:
-            print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server, parameter)}")
-        # Ausgabe der Peer-Sektionen
-        for client in server.clients:
-            print("[Peer]")
-            print(f"# Name = {client.name}")
-            for parameter in peer_config_parameters:
-                print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(client, f'client_{parameter}')}")
-
-    else:
-        # Ausgabe der Konfiguration von server.clients[choice-1]
-        try:
-            client_id = int(choice)
-        except ValueError:
-            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
-            return
-        try:
-            if len(server.clients) < client_id:
-                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
-                      f"{Style.RESET_ALL}")
-                return
-        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
-        except AttributeError:
-            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
-            return
-
-        # Der Name ist nicht Bestandteil der Konfigurationsparameter und wird daher gesondert ausgegeben
-        print(f"{Style.BRIGHT}Name{Style.RESET_ALL} = {getattr(server.clients[client_id-1], 'name')}")
-
-        for parameter in config_parameters:
-            print(f"{Style.BRIGHT}{parameter}{Style.RESET_ALL} = {getattr(server.clients[client_id-1], parameter)}")
 
 
 def create_server_config():
