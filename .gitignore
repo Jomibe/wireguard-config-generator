@@ -138,3 +138,4 @@ doc/Visual Paradigm Projekt/*
 # Pycharm
 .idea/
 src/pylintrc
+res/.wg_conf_bak/*
