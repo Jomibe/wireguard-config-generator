@@ -14,6 +14,8 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 ! Syntaxprüfung mit pylint, Formatierung nach PEP 8
 ! base64 Schlüssel enthalten 0-2 Gleichheitszeichen am Ende
 ! Ausblick: Erweiterung, sodass mehrere Server verwaltet werden können, möglich
+! Aufgrund von Dateisystemen und unterschiedlichen Entwicklungsanforderungen unterscheiden sich Dateisysteminteraktionen
+  zwischen Unix und Windows u.U. grundsätzlich: https://stackoverflow.com/questions/8107352/force-overwrite-in-os-rename
 """
 
 # Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
