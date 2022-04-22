@@ -91,9 +91,6 @@ def config_to_str(server, choice):
     Gibt ein String-Objekt zurück, welches die Konfiguration eines beliebigen Clients enthält. choice enthält die
     Angabe, welcher Client ausgegeben werden soll. 0 steht für den Server.
     """
-    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
-    # von CamelCase
-    interface_config_parameters = list(INTERFACE_CONFIG_PARAMETERS)
 
     # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion. Verwendung von CamelCase
     peer_config_parameters = list(PEER_CONFIG_PARAMETERS)

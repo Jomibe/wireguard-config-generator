@@ -309,7 +309,6 @@ def change_client(server, choice):
                 print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
 
 
-
 def create_server_config():
     """
     Erstelle eine neue Konfiguration.
@@ -416,7 +415,6 @@ def change_network_size(server, choice):
 
     print(f"{Fore.GREEN}Erfolg: Netzklasse {ip4_network_class.upper()} festgelegt{Style.RESET_ALL}")
 
-    ip4_network = ""
     # Geeignetes IPv4-Netzwerk festlegen
     if ip4_network_class == "a":
         ip4_network = ip_network(f'10.0.0.0/{cidr_mask}')
@@ -449,3 +447,9 @@ def change_network_size(server, choice):
             print(f"{Fore.BLUE}Info: Weise Client mit privatem Schlüssel {Style.RESET_ALL}"
                   f"{server.clients[i].privatekey:5}...{Fore.BLUE} die "
                   f"IP-Adresse {Style.RESET_ALL}{list_of_host_addr[i]}{Fore.BLUE} zu.{Style.RESET_ALL}")
+
+
+def update_client_config_parameter(peer, parameter, value):
+    """
+    Setzt den Wert eines Parameters in der Datenstruktur im Arbeitsspeicher für einen Peer (Server oder Client)
+    """
