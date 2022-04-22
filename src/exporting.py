@@ -75,13 +75,11 @@ def export_configurations(server):
             client_config_filename = client.filename
             console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
         elif client.name != "":
-            client_config_filename = f"{client.name}".replace(" ", "_") + ".conf"
+            client_config_filename = WG_DIR + f"{client.name}".replace(" ", "_") + ".conf"
             console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
         else:
-            console("Fehler: Client", index, "enthält keinen Wert für den Parameter filename oder name. Mindestens ein "
-                                             "Parameter ist notwendig für die Bestimmung des Dateinamens.", mode="err")
-            # TODO Dateien aus der Datensicherung müssen wiederhergestellt werden
-            return
+            client_config_filename = f"{WG_DIR}Client_{index}.conf"
+            console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
 
         with open(client_config_filename, "w", encoding='utf-8') as client_config_file:
             client_config_file.write(config_to_str(server, index))
