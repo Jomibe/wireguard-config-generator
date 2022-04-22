@@ -28,13 +28,6 @@ def export_configurations(server):
     Exportiert die Konfigurationen aus dem Arbeitsspeicher in das Wireguard-Verzeichnis.
     """
 
-    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
-    # von CamelCase
-    interface_config_parameters = list(INTERFACE_CONFIG_PARAMETERS)
-
-    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion. Verwendung von CamelCase
-    peer_config_parameters = list(PEER_CONFIG_PARAMETERS)
-
     # Prüfung, ob Konfigurationen vorhanden sind
     files = os.listdir(WG_DIR)
 
@@ -69,24 +62,20 @@ def export_configurations(server):
             os.remove(WG_DIR + file)
 
     # Serverkonfiguration schreiben
-    # TODO refactoring mit Ausgabefunktion, doppelten Code vermeiden: Eine Funktion gibt die Konfiguration als String
-    #  zurück, welcher auf die Konsole oder in die Datei geschrieben wird
     with open(WG_DIR + SERVER_CONFIG_FILENAME, "w", encoding='utf-8') as server_config_file:
         console("Schreibe Serverkonfiguration", WG_DIR + SERVER_CONFIG_FILENAME, mode="info")
         server_config_file.write(config_to_str(server, 0))
         server_config_file.close()
 
     # Clientkonfigurationen schreiben
-    # TODO Was passiert mit Clients ohne Attribut filename und name?
     index = 0
     for client in server.clients:
         index = index + 1
-        client_config_filename = ""
         if client.filename != "":
             client_config_filename = client.filename
             console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
         elif client.name != "":
-            client_config_filename = client.name + ".conf"
+            client_config_filename = f"{client.name}".replace(" ", "_") + ".conf"
             console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
         else:
             console("Fehler: Client", index, "enthält keinen Wert für den Parameter filename oder name. Mindestens ein "
@@ -102,14 +91,14 @@ def export_configurations(server):
 def config_to_str(server, choice):
     """
     Gibt ein String-Objekt zurück, welches die Konfiguration eines beliebigen Clients enthält. choice enthält die
-    Angabe, welcher Client ausgegeben werden soll. 0 steht für den Server
+    Angabe, welcher Client ausgegeben werden soll. 0 steht für den Server.
     """
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
     # von CamelCase
-    interface_config_parameters = [parameter for parameter in INTERFACE_CONFIG_PARAMETERS]
+    interface_config_parameters = list(INTERFACE_CONFIG_PARAMETERS)
 
     # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion. Verwendung von CamelCase
-    peer_config_parameters = [parameter for parameter in PEER_CONFIG_PARAMETERS]
+    peer_config_parameters = list(PEER_CONFIG_PARAMETERS)
 
     config_str = ""
 
@@ -147,35 +136,35 @@ def config_to_str(server, choice):
 
         return config_str
 
-    else:
-        try:
-            if len(server.clients) < client_id:
-                console("Konfiguration", client_id, "existiert nicht", perm=True, mode="err")
-                return None
-        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
-        except AttributeError:
-            console("Keine Konfiguration im Arbeitsspeicher hinterlegt.", perm=True, mode="err")
+    # else
+    try:
+        if len(server.clients) < client_id:
+            console("Konfiguration", client_id, "existiert nicht", perm=True, mode="err")
             return None
+    # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
+    except AttributeError:
+        console("Keine Konfiguration im Arbeitsspeicher hinterlegt.", perm=True, mode="err")
+        return None
 
-        config_str = config_str + "[Interface]\n"
-        console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
-        if server.clients[client_id-1].name != "":
-            config_str = config_str + "# Name = " + server.clients[client_id-1].name + "\n"
-            console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
-        for parameter in interface_config_parameters:
-            if getattr(server.clients[client_id-1], parameter.lower()) != "":
-                config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
-                             "\n"
-                console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-        console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+    config_str = config_str + "[Interface]\n"
+    console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
+    if server.clients[client_id-1].name != "":
+        config_str = config_str + "# Name = " + server.clients[client_id-1].name + "\n"
+        console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
+    for parameter in interface_config_parameters:
+        if getattr(server.clients[client_id-1], parameter.lower()) != "":
+            config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
+                         "\n"
+            console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
+    console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
-        config_str = config_str + "\n[Peer]\n"
-        console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
-        for parameter in peer_config_parameters:
-            if getattr(server.clients[client_id-1], parameter.lower()) != "":
-                console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-                config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
-                             "\n"
-        console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+    config_str = config_str + "\n[Peer]\n"
+    console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
+    for parameter in peer_config_parameters:
+        if getattr(server.clients[client_id-1], parameter.lower()) != "":
+            console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
+            config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1],
+                                                                  parameter.lower()) + "\n"
+    console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
-        return config_str
+    return config_str
