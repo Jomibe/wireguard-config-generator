@@ -73,30 +73,7 @@ def export_configurations(server):
     #  zurück, welcher auf die Konsole oder in die Datei geschrieben wird
     f = open(WG_DIR + SERVER_CONFIG_FILENAME, "w")
     info("Schreibe Serverkonfiguration", WG_DIR + SERVER_CONFIG_FILENAME)
-    f.write("# Serverkonfiguration\n\n")
-    f.write("[Interface]\n")
-
-    info("Die Interface-Sektion enthält folgende Parameter:", end="")
-
-    for parameter in interface_config_parameters:
-        info("", parameter, ", ", end="", quiet=True, no_space=True)
-        if getattr(server, parameter.lower()) != "":
-            f.write(parameter + " = " + getattr(server, parameter.lower()) + "\n")
-    info(quiet=True)  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
-
-    # Clients hinterlegen: Bezeichnung, öffentlicher Schlüssel, IP-Adresse im VPN
-    for client in server.clients:
-        info("Schreibe Peer-Sektion mit folgenden Parametern:", end="")
-        f.write("\n[Peer]\n")
-        if client.name != "":
-            f.write("# Name = " + client.name + "\n")
-            info("", "Name", ", ", end="", quiet=True, no_space=True)
-        for parameter in peer_config_parameters:
-            info("", parameter, ", ", end="", quiet=True, no_space=True)
-            if getattr(client, "client_" + parameter.lower()) != "":
-                f.write(parameter + " = " + getattr(client, "client_" + parameter.lower()) + "\n")
-        info(quiet=True)  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
-
+    f.write(config_to_str(server, 0))
     f.close()
 
     # Clientkonfigurationen schreiben
@@ -134,3 +111,52 @@ def export_configurations(server):
         info(quiet=True)  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
         f.close()
+
+
+def config_to_str(server, choice):
+    """
+    Gibt ein String-Objekt zurück, welches die Konfiguration eines beliebigen Clients enthält. choice enthält die
+    Angabe, welcher Client ausgegeben werden soll. 0 steht für den Server
+    """
+    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
+    # von CamelCase
+    interface_config_parameters = [parameter for parameter in INTERFACE_CONFIG_PARAMETERS]
+
+    # Vorbereitung auf Prüfung auf Konfigurationsparameter der Peer-Sektion. Verwendung von CamelCase
+    peer_config_parameters = [parameter for parameter in PEER_CONFIG_PARAMETERS]
+
+    config_str = ""
+
+    try:
+        client_id = int(choice)
+    except ValueError:
+        err("Eingabe einer Zahl erwartet.")
+        return None
+
+    if client_id == 0:
+        # Serverkonfiguration schreiben
+        config_str = config_str + "# Serverkonfiguration\n\n"
+        config_str = config_str + "[Interface]\n"
+
+        info("Die Interface-Sektion enthält folgende Parameter:", end="")
+
+        for parameter in interface_config_parameters:
+            info("", parameter, ", ", end="", quiet=True, no_space=True)
+            if getattr(server, parameter.lower()) != "":
+                config_str = config_str + parameter + " = " + getattr(server, parameter.lower()) + "\n"
+        info(quiet=True)  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+
+        # Clients hinterlegen: Bezeichnung, öffentlicher Schlüssel, IP-Adresse im VPN
+        for client in server.clients:
+            info("Schreibe Peer-Sektion mit folgenden Parametern:", end="")
+            config_str = config_str + "\n[Peer]\n"
+            if client.name != "":
+                config_str = config_str + "# Name = " + client.name + "\n"
+                info("", "Name", ", ", end="", quiet=True, no_space=True)
+            for parameter in peer_config_parameters:
+                info("", parameter, ", ", end="", quiet=True, no_space=True)
+                if getattr(client, "client_" + parameter.lower()) != "":
+                    config_str = config_str + parameter + " = " + getattr(client, "client_" + parameter.lower()) + "\n"
+            info(quiet=True)  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+
+        return config_str
