@@ -20,7 +20,7 @@ PEER_CONFIG_PARAMETERS = ("AllowedIPs", "Endpoint", "PublicKey", "PersistentKeep
 CONFIG_PARAMETERS = INTERFACE_CONFIG_PARAMETERS + PEER_CONFIG_PARAMETERS
 
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
-DEBUG = False
+DEBUG = True
 
 # Für den Betrieb notwendige Konfigurationsparameter
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")
@@ -34,12 +34,12 @@ RE_MATCH_KEY = r"^ *([a-zA-Z]*) *"
 # zweite Gruppe beinhaltet den Wert ohne führende Leerzeichen.
 RE_MATCH_KEY_VALUE = r"^([^ ]*) *= *(.*)"
 
-# Absoluter Ordnerpfad für die Datensicherung. Standardmäßig unterhalb von WG_DIR.
-SAVEDIR = WG_DIR + ".wg_conf_bak/"
+# Relativer Ordnerpfad zu WG_DIR für die Datensicherung.
+SAVEDIR = ".wg_conf_bak/"
 
-# Absoluter Ordnerpfad für die Datensicherung. Wird nach erfolgreicher Erstellung in SAVEDIR umbenannt, um Datenverlust
-# bei einem Fehler im Export vorzubeugen. Standardmäßig unterhalb von WG_DIR.
-SAVEDIR_NEW = WG_DIR + ".wg_conf_bak_new/"
+# Relativer Ordnerpfad zu WG_DIR für die Datensicherung. Wird nach erfolgreicher Erstellung in SAVEDIR umbenannt,
+# um Datenverlust bei einem Fehler im Export vorzubeugen.
+SAVEDIR_NEW = ".wg_conf_bak_new/"
 
 # Datensicherung beim Export deaktivieren
 DISABLE_BACKUP = False
