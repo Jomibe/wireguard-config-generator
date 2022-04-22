@@ -217,9 +217,11 @@ def assign_peer_to_client(client_data, server):
 
         if not success:
             console("Eine Peer-Sektion konnte keinem Client zugeordnet werden, da kein übereinstimmender öffentlicher "
-                    "Schlüssel in der Konfiguration enthalten ist. Das Schlüsselpaar ist ungültig. Bitte in der "
-                    "Serverkonfiguration", WG_DIR + SERVER_CONFIG_FILENAME, "die Sektion mit dem öffentlichen "
-                    "Schlüssel", client_data.publickey, "prüfen.", mode="warn", perm=True)
+                    "Schlüssel in der Konfiguration enthalten ist. Das Schlüsselpaar ist ungültig oder die "
+                    "Konfigurationsdatei ist nicht mehr vorhanden. Bitte in der Serverkonfiguration", WG_DIR +
+                    SERVER_CONFIG_FILENAME, "die Sektion mit dem öffentlichen Schlüssel", client_data.publickey,
+                    "prüfen. Die Clientkonfiguration wird andernfalls beim nächsten Export verworfen.", mode="warn",
+                    perm=True)
 
 
 def import_configurations():
