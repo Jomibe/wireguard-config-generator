@@ -14,12 +14,13 @@ from colorama import Fore, Style
 from constants import DEBUG
 
 
-def info(*message, end=None, quiet=None, no_space=None):
+def info(*message, end=None, quiet=None, no_space=None, perm=None):
     """
     Gibt die Inhalte von message in abwechselnd in blauer und weißer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
     end gibt das Zeilenende für print() an.
-    Wenn quiet=True, dann wird Info: weggelassen.
+    Wenn quiet=True, dann wird 'Info:' weggelassen.
     Wenn no_space=True, werden keine Leerzeichen zwischen den Parametern ausgegeben
+    Wenn perm=True, wird die Nachricht auch ausgegeben wenn DEBUG!=True
     """
     if DEBUG:
 
