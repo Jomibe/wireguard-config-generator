@@ -25,7 +25,7 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 import sys
 
 # Imports von Drittanbietern
-from colorama import init, Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+from colorama import Fore, init, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
 
 # Eigene Imports
 from importing import import_configurations
@@ -37,10 +37,8 @@ from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
 from config_management import print_details
-from constants import DEBUG
-from debugging import info, warn, err, erfolg
+from debugging import console
 from exporting import export_configurations
-from server_config import ServerConfig
 
 
 def print_menu():
@@ -74,28 +72,28 @@ def main():
 
     repeat = True
     while repeat:
-        info("Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.")
+        console("Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.", mode="info")
 
         option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
 
         if option == "1":
-            info("Importiere Verbindungen...")
+            console("Importiere Verbindungen...", mode="info")
             if server is not None:
-                choice = input(f"{Fore.YELLOW}Warnung: Konfiguration im Arbeitsspeicher überschreiben?{Style.RESET_ALL}"
-                               f" [j/n]")
+                choice = input(console("Konfiguration im Arbeitsspeicher überschreiben?", "[j/n]", mode="warn",
+                                       perm=True))
                 if choice != "j":
-                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen{Style.RESET_ALL}")
+                    console("Vorgang abgebrochen", mode="info", perm=True)
                     continue
             server = import_configurations()
-            erfolg("Verbindungen importiert.")
+            console("Verbindungen importiert.", mode="succ")
         elif option == "2":
             if server is None:
-                print(f"{Fore.RED}Fehler: Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration "
-                      f"importieren oder anlegen.{Style.RESET_ALL}")
+                console("Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration importieren oder "
+                        "anlegen.", mode="err", perm=True)
                 continue
             print_configuration(server)
-            print(f"{Fore.BLUE}Info: Für Details {Style.RESET_ALL}ID{Fore.BLUE} eingeben, {Style.RESET_ALL}0{Fore.BLUE}"
-                  f" für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            console("Für Details", "ID", "eingeben, ", "0", "für den Server. Zurück zum Hauptmenü mit", ".",
+                    mode="info", perm=True)
             while True:
                 choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
                 if choice == ".":
@@ -103,54 +101,54 @@ def main():
                 print_details(server, choice)
         elif option == "3":
             if server is None:
-                print(f"{Fore.RED}Fehler: keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im "
-                      f"Arbeitsspeicher angelegt werden? (j/n){Style.RESET_ALL}")
+                console("Keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im Arbeitsspeicher angelegt "
+                        "werden?", "(j/n)", mode="err", perm="True")
                 choice = input()
 
                 if choice == "j":
                     server = create_server_config()
-                    print(f"{Fore.BLUE}Info: Serverkonfiguration angelegt. Es folgt die Erstellung einer "
-                          f"Clientkonfiguration{Style.RESET_ALL}")
+                    console("Serverkonfiguration angelegt. Es folgt die Erstellung einer Clientkonfiguration",
+                            mode="info", perm=True)
                 else:
-                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen.{Style.RESET_ALL}")
+                    console("Vorgang abgebrochen.", mode="info", perm=True)
                     continue
             insert_client(server)
         elif option == "4":
             choice = input("ID? ")
             if choice == "0":
-                choice = input(f"{Fore.YELLOW}Warnung: Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?"
-                               f"{Style.RESET_ALL} (j/n)")
+                choice = input(console("Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?", "(j/n)", mode="warn",
+                                       perm=True))
                 if choice != "j":
-                    print(f"{Fore.BLUE}Info: Vorgang abgebrochen{Style.RESET_ALL}")
+                    console("Vorgang abgebrochen", mode="info", perm=True)
                     continue
                 server = None
                 continue
             delete_client(server, choice)
         elif option == "5":
-            print(f"{Fore.BLUE}Info: Bitte {Style.RESET_ALL}ID{Fore.BLUE} des Clients eingeben, {Style.RESET_ALL}0"
-                  f"{Fore.BLUE} für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
+                    mode="info", perm=True)
             try:
                 choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
             change_client(server, choice)
         elif option == "6":
-            print(f"{Fore.BLUE}Info: Bitte {Style.RESET_ALL}ID{Fore.BLUE} des Clients eingeben, {Style.RESET_ALL}0"
-                  f"{Fore.BLUE} für den Server. Zurück zum Hauptmenü mit {Style.RESET_ALL}.")
+            console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
+                    mode="info", perm=True)
             try:
                 choice = input(f"{Style.BRIGHT}Schlüsselpaar erneuern (Auswahl) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
             change_client_keypair(server, choice)
         elif option == "7":
-            print(f"{Fore.BLUE}Info: Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?"
-                  f"{Style.RESET_ALL}")
+            console("Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?", mode="info",
+                    perm=True)
             try:
                 choice = input(f"{Style.BRIGHT}Netzwerkgröße anpassen (Auswahl) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
             change_network_size(server, choice)
         elif option == "9":
@@ -160,8 +158,7 @@ def main():
         elif option == "0":
             repeat = False
         else:
-            print(f"{Fore.RED}Fehler: Ungültige Eingabe. Für Hilfe {Style.RESET_ALL}?{Fore.RED} eingeben"
-                  f"{Style.RESET_ALL}")
+            console("Ungültige Eingabe. Für Hilfe", "?", "eingeben.", mode="err", perm=True)
 
 
 if __name__ == "__main__":

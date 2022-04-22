@@ -10,17 +10,16 @@ import glob  # Für das Auffinden von Konfigurationsdateien mittels Wildcard
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
-from colorama import Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
 
 # Eigene Imports
 from config_management import calculate_publickey
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
-from constants import DEBUG
+# from constants import DEBUG
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import SERVER_CONFIG_FILENAME
 from constants import PEER_CONFIG_PARAMETERS
-from debugging import info, warn, err, erfolg
+from debugging import console
 from client_config import ClientConfig
 from file_management import check_file
 from file_management import check_dir
@@ -54,40 +53,38 @@ def parse_and_import(peer):
     is_server = False
     if isinstance(peer, ServerConfig):
         is_server = True
-        erfolg("Serverkonfiguration erkannt")
+        console("Serverkonfiguration erkannt", mode="succ")
         if peer.filename != WG_DIR + SERVER_CONFIG_FILENAME:
-            info(f"Serverkonfiguration" ,peer.filename, "entspricht nicht dem Standard",
-                 WG_DIR + SERVER_CONFIG_FILENAME)
+            console("Serverkonfiguration", peer.filename, "entspricht nicht dem Standard",
+                    WG_DIR + SERVER_CONFIG_FILENAME, mode="info")
     elif isinstance(peer, ClientConfig):
-        if DEBUG:
-            erfolg("Clientkonfiguration erkannt")
+        console("Clientkonfiguration erkannt", mode="succ")
     else:
-        err("Ungültige Datenstruktur vom Typ", type(peer), "übergeben.")
+        console("Ungültige Datenstruktur vom Typ", type(peer), "übergeben.", mode="err")
 
     # Öffnen der Datei
     with open(peer.filename, encoding='utf-8') as config:
         # Datei Zeile für Zeile einlesen
-        info("Lese Datei", peer.filename)
+        console("Lese Datei", peer.filename, mode="info")
         for line in config:
-            if DEBUG:
-                # Zeile ohne \n ausgeben
-                info("Lese Zeile", line.replace('\n', ''))
+            # Zeile ohne \n ausgeben
+            console("Lese Zeile", line.replace('\n', ''), mode="info")
             # Die Zeile wird auf Bestandteile der Syntax untersucht: leer, Kommentar, Sektion oder Name-Wert Paar
             match = re.search(r'^ *$', line)  # Leere Zeile darf keine oder nur Leerzeichen enthalten
             # Bei leerer Zeile: fahre fort
             if match:
-                erfolg("Zeile enthält keine Konfiguration.")
+                console("Zeile enthält keine Konfiguration.", mode="succ")
                 continue
 
             match = re.search(r'^\[.*]$', line)
             # Bei Sektion: Unterscheide zwischen Server und Client. Client: fahre fort. Server: Importiere Daten in die
             # Datenstruktur des Clients.
             if match:
-                erfolg("Zeile leitet eine INI-Sektion ein.")
+                console("Zeile leitet eine INI-Sektion ein.", mode="succ")
 
                 match = re.search(r'^ *\[Peer] *$', line, re.IGNORECASE)
                 if match and is_server:
-                    erfolg("Zeile leitet eine Peer-Sektion ein.")
+                    console("Zeile leitet eine Peer-Sektion ein.", mode="succ")
 
                     # Die Daten werden zeilenweise eingelesen. Eine Peer-Sektion besteht aus unbekannt vielen Zeilen.
                     # Um die Daten zu einem peer zu sammeln, muss also zeilenübergreifend gearbeitet werden. Die Daten
@@ -115,14 +112,14 @@ def parse_and_import(peer):
             # Die Bezeichnung ist kein offizieller Parameter (aber ein INI-Standard) und wird daher gesondert
             # behandelt.
             if match:
-                erfolg("Kommentar erkannt")
+                console("Kommentar erkannt", mode="succ")
                 if peer.name == "":
                     # Rauten (#), Leerzeichen sowie ein ggf. voranstehendes 'Name =' werden entfernt
                     peer.name = line.replace('\n', '').replace("Name", "").replace("=", "").replace("#", "").strip()
-                    erfolg("Bezeichnung", peer.name, "hinterlegt.")
+                    console("Bezeichnung", peer.name, "hinterlegt.", mode="succ")
                 else:
-                    info("Es sind mehrere kommentierte Zeilen in der Datei vorhanden. Der erste Kommentar wurde als "
-                         "Bezeichnung interpretiert, dieser und folgende Kommentare werden ignoriert.")
+                    console("Es sind mehrere kommentierte Zeilen in der Datei vorhanden. Der erste Kommentar wurde als "
+                            "Bezeichnung interpretiert, dieser und folgende Kommentare werden ignoriert.", mode="info")
                 continue
 
             # TODO Refactoring: nach Erkennung des regex weiteren Prozess in Funktion auslagern und in insert_client()
@@ -131,41 +128,41 @@ def parse_and_import(peer):
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
             key = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[1].strip()
             value = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[2].strip()
-            erfolg("Parameter", key, "mit Wert", value, "erkannt.")
+            console("Parameter", key, "mit Wert", value, "erkannt.", mode="succ")
             # Bei Name-Wert Paar: Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
             if match:
-                info("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.")
+                console("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.", mode="info")
                 # Prüfe, ob der Parameter Teil einer Peer-Sektion einer Serverkonfiguration ist
                 if key.lower() in peer_config_parameters and is_server:
                     # Falls ja, Parameter nicht im peer-Objekt hinterlegen, sondern im client_data Objekt vorhalten
                     setattr(client_data, key.lower(), value)
-                    erfolg("Ein Parameter aus einer Server-Peer Sektion wurde für die spätere Verarbeitung "
-                           "zurückgestellt.")
+                    console("Ein Parameter aus einer Server-Peer Sektion wurde für die spätere Verarbeitung "
+                            "zurückgestellt.", mode="succ")
 
                 # Sonst: prüfe, ob der Parameter grundsätzlich gültig ist
                 elif key.lower() in config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(peer, key.lower(), value)
-                    erfolg("Parameter hinterlegt.")
+                    console("Parameter hinterlegt.", mode="succ")
                     # "Streiche" den Parameter von der Liste der notwendigen Parameter, falls vorhanden
                     if key.lower() in minimal_parameters:
-                        erfolg("Parameter", key.lower(), "war in der Liste der notwendigen Parameter enthalten")
+                        console("Parameter", key.lower(), "war in der Liste der notwendigen Parameter enthalten",
+                                mode="succ")
                         minimal_parameters.remove(key.lower())
 
                 # Falls nein: gebe eine entsprechende Warnung aus
                 else:
-                    print(f"{Fore.RED}Fehler: Kein gültiger Parameter in Zeile {Style.RESET_ALL}" + line.replace(
-                        '\n', '') + f"{Fore.RED} erkannt{Style.RESET_ALL}")
-
+                    console("Kein gültiger Parameter in Zeile", line.replace('\n', ''), "erkannt", mode="err",
+                            perm=True)
                 continue
 
             # Ist keine Übereinstimmung zu finden, ist die Zeile ungültig
-            print(f"{Fore.RED}Fehler: Die Zeile ist ungültig:{Style.RESET_ALL}", line.replace('\n', ''))
+            console("Die Zeile ist ungültig:", line.replace('\n', ''), mode="err", perm=True)
 
         # Sobald das Ende der Datei erreicht ist, prüfe ob notwendige Konfigurationsparameter importiert wurden
         if len(minimal_parameters) > 0:
-            print(f"{Fore.RED}Fehler: Datei {re.split(WG_DIR, peer.filename)[1]} enthält nicht die erforderlichen "
-                  f"Parameter {MINIMAL_CONFIG_PARAMETERS}{Style.RESET_ALL}")
+            console("Datei", re.split(WG_DIR, peer.filename)[1], "enthält nicht die erforderlichen Parameter",
+                    MINIMAL_CONFIG_PARAMETERS, mode="warn", perm=True)
 
         # und für den Fall, dass eine Peer-Sektion endet: übertrage Daten von client_data in das server Objekt.
         if isinstance(client_data, Peer):  # Falls eine Peer-Sektion verarbeitet wurde
@@ -182,48 +179,47 @@ def assign_peer_to_client(client_data, server):
     # Prüfung, ob client_data einen öffentlichen Schlüssel enthält
     # Falls nicht, ist eine Zuordnung unmöglich
     if client_data.publickey == "":
-        print(f"{Fore.YELLOW}Warnung: eine Peer-Sektion aus der Serverkonfiguration kann keinem Client zugeordnet "
-              f"werden. Die Peer-Sektionen müssen einen Wert für PublicKey enthalten. Bitte die Sektion mit folgenden "
-              f"Werten prüfen: ", end="")
+        console("Eine Peer-Sektion aus der Serverkonfiguration kann keinem Client zugeordnet werden. Die Peer-Sektionen"
+                " müssen einen Wert für PublicKey enthalten. Bitte die Sektion mit folgenden Werten prüfen: ", end="",
+                mode="warn", perm=True)
 
         additional_values = False
         for parameter in PEER_CONFIG_PARAMETERS:
             if getattr(client_data, parameter.lower()) != "":
-                print(f"{parameter} = {getattr(client_data, parameter.lower())}", end="")
+                print(f"{parameter} = {getattr(client_data, parameter.lower())}", end="")  # console()
                 additional_values = True
 
         if not additional_values:
-            print(f"es handelt sich um eine leere Peer-Sektion.{Style.RESET_ALL}")
+            console("es handelt sich um eine leere Peer-Sektion.", mode="warn", quiet=True, perm=True)
         else:
-            print(f"{Style.RESET_ALL}")  # Zeilenumbruch
+            print("")  # Zeilenumbruch
 
     # Falls ein öffentlicher Schlüssel hinterlegt wurde, diesen mit den vorhandenen Schlüsseln abgleichen
     else:
         # Vorbereitung für den Programmablauf nach erfolgreicher Übertragung der Parameter in das server-Objekt
         success = False
 
-        info("Zuordnung der Client-Sektion zu vorhandenen Clients.")
+        console("Zuordnung der Client-Sektion zu vorhandenen Clients.", mode="info")
         for client in server.clients:
-            info("Vergleiche Schlüssel aus der Peer-Sektion", client_data.publickey, "mit hinterlegtem Schlüssel",
-                 client.client_publickey, "...")
+            console("Vergleiche Schlüssel aus der Peer-Sektion", client_data.publickey, "mit hinterlegtem Schlüssel",
+                    client.client_publickey, "...", mode="info")
             if client.client_publickey == client_data.publickey:
-                erfolg("Übereinstimmung gefunden")
+                console("Übereinstimmung gefunden", mode="succ")
                 # Daten übertragen
-                info("Beginne mit der Übertragung der Parameter")
+                console("Beginne mit der Übertragung der Parameter", mode="info")
                 for parameter in PEER_CONFIG_PARAMETERS:
                     # Die Parameter aus den Peer-Sektionen der Serverkonfiguration werden clientspezifisch gespeichert.
                     # Da in den Konfigurationen der Clients auch eine Peer-Sektion vorkommt, wird den Parametern aus
                     # der Serverkonfiguration ein 'client_' vorangestellt.
                     setattr(client, "client_" + parameter.lower(), getattr(client_data, parameter.lower()))
-                erfolg("Parameter erfolgreich übernommen")
+                console("Parameter erfolgreich übernommen", mode="succ")
                 success = True
 
         if not success:
-            print(f"{Fore.YELLOW}Warnung: eine Peer-Sektion konnte keinem Client zugeordnet werden, da kein "
-                  f"übereinstimmender öffentlicher Schlüssel in der Konfiguration enthalten ist. Das Schlüsselpaar "
-                  f"ist ungültig. Bitte in der Serverkonfiguration {Style.RESET_ALL}{WG_DIR}{SERVER_CONFIG_FILENAME}"
-                  f"{Fore.YELLOW} die Sektion mit dem öffentlichen Schlüssel {Style.RESET_ALL}{client_data.publickey}"
-                  f"{Fore.YELLOW} prüfen.{Style.RESET_ALL}")
+            console("Eine Peer-Sektion konnte keinem Client zugeordnet werden, da kein übereinstimmender öffentlicher "
+                    "Schlüssel in der Konfiguration enthalten ist. Das Schlüsselpaar ist ungültig. Bitte in der "
+                    "Serverkonfiguration", WG_DIR + SERVER_CONFIG_FILENAME, "die Sektion mit dem öffentlichen "
+                    "Schlüssel", client_data.publickey, "prüfen.", mode="warn", perm=True)
 
 
 def import_configurations():
@@ -244,11 +240,11 @@ def import_configurations():
     try:
         list_client_configuration_filenames.remove(server.filename)
     except ValueError:
-        print(f"{Fore.YELLOW}Warnung: Keine Serverkonfiguration wg0.conf gefunden.{Style.RESET_ALL}")
+        console("Keine Serverkonfiguration", "wg0.conf", "gefunden.", mode="warn", perm=True)
 
     # Zu importierende Clientkonfigurationen anzeigen
-    info("Neben der Serverkonfiguration wurden folgende Clientkonfigurationen gefunden:",
-         f"{list_client_configuration_filenames}")
+    console("Neben der Serverkonfiguration wurden folgende Clientkonfigurationen gefunden:",
+            list_client_configuration_filenames, mode="info")
 
     # Konfigurationen importieren
 
@@ -268,11 +264,10 @@ def import_configurations():
         # die spätere Zuordnung der Peer-Sektionen aus der Serverkonfiguration.
         calculate_publickey(server.clients[-1])
 
-        erfolg("Folgende Clients wurden importiert:")
+        console("Folgende Clients wurden importiert:", mode="succ")
         for client in server.clients:
-            if DEBUG:
-                print(f"{Fore.GREEN}Client {Style.RESET_ALL}{str(client.name)}{Fore.GREEN} mit privatem Schlüssel "
-                      f"{Style.RESET_ALL}{str(client.privatekey)}")
+            console("Client", str(client.name), "mit privatem Schlüssel", str(client.privatekey), mode="succ",
+                    quiet=True)
 
     # ..des Servers
     parse_and_import(server)

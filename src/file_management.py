@@ -2,12 +2,17 @@
 Enthält häufig verwendete Funktionen beim Umgang mit Dateien.
 """
 
+# Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
+# pylint: disable=import-error
+
 # Imports aus Standardbibliotheken
 import os  # Für Dateisystemzugriffe
 from pathlib import Path  # Für Dateipfadangaben
 
 # Imports von Drittanbietern
-from colorama import Fore, Style  # Für vom Betriebssystem unabhängige farbige Ausgaben
+
+# Eigene Imports
+from debugging import console  # Für farbliche Ausgaben auf der Konsole
 
 
 def check_file(filename):
@@ -16,19 +21,19 @@ def check_file(filename):
     """
     # Prüfung, ob der Pfad existiert.
     if not Path(filename).exists():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {filename} existiert nicht.{Style.RESET_ALL}")
+        raise SystemExit(console("Fehler: Der Pfad", filename, "existiert nicht.", mode="err", perm=True))
 
     # Prüfung, ob der Pfad auf eine Datei zeigt.
     if not Path(filename).is_file():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {filename} ist keine Datei.{Style.RESET_ALL}")
+        raise SystemExit(console("Der Pfad", filename, "ist keine Datei.", mode="err", perm=True))
 
     # Prüfung, ob die Datei gelesen werden kann.
     if os.access(Path(filename), os.R_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Die Datei {filename} ist nicht lesbar.{Style.RESET_ALL}")
+        SystemExit(console("Die Datei", filename, "ist nicht lesbar.", mode="err", perm=True))
 
     # Prüfung, ob in die Datei geschrieben werden kann.
     if os.access(Path(filename), os.W_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Die Datei {filename} ist nicht beschreibbar.{Style.RESET_ALL}")
+        SystemExit(console("Die Datei", filename, "ist nicht beschreibbar.", mode="err", perm=True))
 
 
 def check_dir(dirname):
@@ -37,16 +42,16 @@ def check_dir(dirname):
     """
     # Prüfung, ob der Pfad existiert.
     if not Path(dirname).exists():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {dirname} existiert nicht.{Style.RESET_ALL}")
+        raise SystemExit(console("Der Pfad", dirname, "existiert nicht.", mode="err", perm=True))
 
     # Prüfung, ob der Pfad auf ein Verzeichnis zeigt.
     if not Path(dirname).is_dir():
-        raise SystemExit(f"{Fore.RED}Fehler: Der Pfad {dirname} ist kein Ordner.{Style.RESET_ALL}")
+        raise SystemExit(console("Der Pfad", dirname, "ist kein Ordner.", mode="err", perm=True))
 
     # Prüfung, ob das Verzeichnis gelesen werden kann.
     if os.access(Path(dirname), os.R_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Das Verzeichnis {dirname} ist nicht lesbar.{Style.RESET_ALL}")
+        SystemExit(console("Das Verzeichnis", dirname, "ist nicht lesbar.", mode="err", perm=True))
 
     # Prüfung, ob in das Verzeichnis geschrieben werden kann.
     if os.access(Path(dirname), os.W_OK) is not True:
-        SystemExit(f"{Fore.RED}Fehler: Das Verzeichnis {dirname} ist nicht beschreibbar.{Style.RESET_ALL}")
+        SystemExit(console("Das Verzeichnis", dirname, "ist nicht beschreibbar.", mode="err", perm=True))

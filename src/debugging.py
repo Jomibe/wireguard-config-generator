@@ -14,28 +14,37 @@ from colorama import Fore, Style
 from constants import DEBUG
 
 
-def info(*message, end=None, quiet=None, no_space=None, perm=None):
+def console(*message, end=None, mode, no_space=None, perm=None, quiet=None):
     """
-    Gibt die Inhalte von message in abwechselnd in blauer und weißer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
+    Gibt die Inhalte von message in abwechselnden Farben auf der Konsole aus, wenn DEBUG oder perm aktiv ist.
     end gibt das Zeilenende für print() an.
-    Wenn quiet=True, dann wird 'Info:' weggelassen.
+    Wenn quiet=True, dann wird 'Info:', usw. weggelassen.
     Wenn no_space=True, werden keine Leerzeichen zwischen den Parametern ausgegeben
-    Wenn perm=True, wird die Nachricht auch ausgegeben wenn DEBUG!=True
+    mode muss beim Aufruf zwingend einen Wert zugewiesen werden
     """
-    if DEBUG:
+    if DEBUG or perm:
 
-        mode = 0  # 0 = keine Farbe, 1 = blaue Farbe
+        was_colored = False  # Gibt an, ob die letzte Ausgabe farblich markiert war.
 
         if quiet is not True:
-            print(f"{Fore.BLUE}Info: ", end="")
+            print_color_code(mode)
+
+            if mode == "info":
+                print("Info: ", end="")
+            elif mode == "warn":
+                print("Warnung: ", end="")
+            elif mode == "err":
+                print("Fehler: ", end="")
+            elif mode == "succ":
+                print("Erfolg: ", end="")
 
         for part in message:
-            if mode == 0:
-                print(f"{Fore.BLUE}", end="")
-                mode = 1
+            if not was_colored:
+                print_color_code(mode)
+                was_colored = True
             else:
                 print(f"{Style.RESET_ALL}", end="")
-                mode = 0
+                was_colored = False
 
             if no_space:
                 print(part, end="")
@@ -49,70 +58,23 @@ def info(*message, end=None, quiet=None, no_space=None, perm=None):
             print(f"{Style.RESET_ALL}", end=end)  # Parameter end wird an print() weitergegeben
 
 
-def warn(*message):
+def print_color_code(mode):
     """
-    Gibt die Inhalte von message in gelber Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
+    Gibt den Steuercode für eine bestimmte Farbe auf der Konsole aus. Die Farbe wird indirekt durch mode bestimmt:
+    info -> blau
+    warn -> gelb
+    err -> rot
+    succ -> grün
+
+    Entspricht mode keinem der o.g. Zeichenketten, erfolgt keine Ausgabe. Dadurch bleibt die Farbausgabe unverändert
+    und wird nicht zurückgesetzt.
     """
-    if DEBUG:
 
-        mode = 0  # 0 = keine Farbe, 1 = gelbe Farbe
-
-        print(f"{Fore.YELLOW}Warnung: ", end="")
-
-        for part in message:
-            if mode == 0:
-                print(f"{Fore.YELLOW}", end="")
-                mode = 1
-            else:
-                print(f"{Style.RESET_ALL}", end="")
-                mode = 0
-
-            print(part, end=" ")
-
-        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
-
-
-def err(*message):
-    """
-    Gibt die Inhalte der Liste message in roter Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
-    """
-    if DEBUG:
-
-        mode = 0  # 0 = keine Farbe, 1 = rote Farbe
-
-        print(f"{Fore.RED}Fehler: ", end="")
-
-        for part in message:
-            if mode == 0:
-                print(f"{Fore.RED}", end="")
-                mode = 1
-            else:
-                print(f"{Style.RESET_ALL}", end="")
-                mode = 0
-
-            print(part, end=" ")
-
-        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
-
-
-def erfolg(*message):
-    """
-    Gibt die Inhalte von message in blauer Farbe auf der Konsole aus, wenn DEBUG aktiv ist.
-    """
-    if DEBUG:
-
-        mode = 0  # 0 = keine Farbe, 1 = blaue Farbe
-
-        print(f"{Fore.GREEN}Erfolg: ", end="")
-
-        for part in message:
-            if mode == 0:
-                print(f"{Fore.GREEN}", end="")
-                mode = 1
-            else:
-                print(f"{Style.RESET_ALL}", end="")
-                mode = 0
-
-            print(part, end=" ")
-
-        print(f"{Style.RESET_ALL}")  # Abschließender Zeilenumbruch
+    if mode == "info":
+        print(Fore.BLUE, end="")
+    elif mode == "warn":
+        print(Fore.YELLOW, end="")
+    elif mode == "err":
+        print(Fore.RED, end="")
+    elif mode == "succ":
+        print(Fore.GREEN, end="")
