@@ -2,7 +2,7 @@
 Enthält vom Programm verwendete statische Veriablen. Die Parameter können auf das eigene System angepasst werden.
 """
 
-# Pfad des Konfigurationsverzeichnisses von Wireguard. Standard: /etc/wireguard
+# Pfad des Konfigurationsverzeichnisses von Wireguard. Muss mit einem / enden. Standard: /etc/wireguard
 WG_DIR = "../res/"
 
 # Dateiname der Serverkonfiguration. Standard: wg0.conf
@@ -20,7 +20,7 @@ PEER_CONFIG_PARAMETERS = ("AllowedIPs", "Endpoint", "PublicKey", "PersistentKeep
 CONFIG_PARAMETERS = INTERFACE_CONFIG_PARAMETERS + PEER_CONFIG_PARAMETERS
 
 # Zusätzliche Ausgaben zum Programmablauf ausgeben
-DEBUG = True
+DEBUG = False
 
 # Für den Betrieb notwendige Konfigurationsparameter
 MINIMAL_CONFIG_PARAMETERS = ("address", "privatekey")
@@ -34,11 +34,11 @@ RE_MATCH_KEY = r"^ *([a-zA-Z]*) *"
 # zweite Gruppe beinhaltet den Wert ohne führende Leerzeichen.
 RE_MATCH_KEY_VALUE = r"^([^ ]*) *= *(.*)"
 
-# Relativer Ordnerpfad zu WG_DIR für die Datensicherung.
+# Relativer Ordnerpfad zu WG_DIR für die Datensicherung. Muss mit einem / enden.
 SAVEDIR = ".wg_conf_bak/"
 
 # Relativer Ordnerpfad zu WG_DIR für die Datensicherung. Wird nach erfolgreicher Erstellung in SAVEDIR umbenannt,
-# um Datenverlust bei einem Fehler im Export vorzubeugen.
+# um Datenverlust bei einem Fehler im Export vorzubeugen. Muss mit einem / enden.
 SAVEDIR_NEW = ".wg_conf_bak_new/"
 
 # Datensicherung beim Export deaktivieren
