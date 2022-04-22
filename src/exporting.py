@@ -108,16 +108,7 @@ def config_to_str(server, choice):
 
     if client_id == 0:
         # Serverkonfiguration schreiben
-        config_str = config_str + "# Serverkonfiguration\n\n"
-        config_str = config_str + "[Interface]\n"
-
-        console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
-
-        for parameter in interface_config_parameters:
-            console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-            if getattr(server, parameter.lower()) != "":
-                config_str = config_str + parameter + " = " + getattr(server, parameter.lower()) + "\n"
-        console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+        config_str = config_str + interface_to_str(server)
 
         # Clients hinterlegen: Bezeichnung, öffentlicher Schlüssel, IP-Adresse im VPN
         for client in server.clients:
@@ -144,17 +135,7 @@ def config_to_str(server, choice):
         console("Keine Konfiguration im Arbeitsspeicher hinterlegt.", perm=True, mode="err")
         return None
 
-    config_str = config_str + "[Interface]\n"
-    console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
-    if server.clients[client_id-1].name != "":
-        config_str = config_str + "# Name = " + server.clients[client_id-1].name + "\n"
-        console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
-    for parameter in interface_config_parameters:
-        if getattr(server.clients[client_id-1], parameter.lower()) != "":
-            config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
-                         "\n"
-            console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-    console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+    config_str = config_str + interface_to_str(server.clients[client_id-1])
 
     config_str = config_str + "\n[Peer]\n"
     console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
@@ -166,3 +147,32 @@ def config_to_str(server, choice):
     console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
     return config_str
+
+
+def interface_to_str(peer):
+    """
+    Gibt die Interface-Sektion eines Peers zurück. Ein Peer kann ein Server oder Client sein, beide haben den selben
+    Parameterumfang in der Interface-Sektion.
+    """
+
+    # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen der Interface-Sektion. Verwendung
+    # von CamelCase
+    interface_config_parameters = list(INTERFACE_CONFIG_PARAMETERS)
+
+    config_interface_str = ""
+
+    config_interface_str = config_interface_str + "[Interface]\n"
+
+    console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
+
+    if peer.name != "":
+        config_interface_str = config_interface_str + "# Name = " + peer.name + "\n"
+        console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
+
+    for parameter in interface_config_parameters:
+        console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
+        if getattr(peer, parameter.lower()) != "":
+            config_interface_str = config_interface_str + parameter + " = " + getattr(peer, parameter.lower()) + "\n"
+    console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+
+    return config_interface_str
