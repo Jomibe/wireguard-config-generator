@@ -89,30 +89,14 @@ def export_configurations(server):
             client_config_filename = client.name + ".conf"
             console("Schreibe Konfiguration für Client", index, "in", WG_DIR + client_config_filename, mode="info")
         else:
-            console("Fehler: Client", index, "enthält keine Bezeichnung. Diese ist notwendig für den Export.",
-                    mode="err")
+            console("Fehler: Client", index, "enthält keinen Wert für den Parameter filename oder name. Mindestens ein "
+                                             "Parameter ist notwendig für die Bestimmung des Dateinamens.", mode="err")
             # TODO Dateien aus der Datensicherung müssen wiederhergestellt werden
             return
 
         with open(client_config_filename, "w", encoding='utf-8') as client_config_file:
-            client_config_file.write("[Interface]\n")
-            console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
-            if client.name != "":
-                client_config_file.write("# Name = " + client.name + "\n")
-                console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
-            for parameter in interface_config_parameters:
-                if getattr(client, parameter.lower()) != "":
-                    client_config_file.write(parameter + " = " + getattr(client, parameter.lower()) + "\n")
-                    console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-            console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
-
-            client_config_file.write("\n[Peer]\n")
-            console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
-            for parameter in peer_config_parameters:
-                if getattr(client, parameter.lower()) != "":
-                    console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-                    client_config_file.write(parameter + " = " + getattr(client, parameter.lower()) + "\n")
-            console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+            client_config_file.write(config_to_str(server, index))
+            client_config_file.close()
 
 
 def config_to_str(server, choice):
@@ -172,3 +156,26 @@ def config_to_str(server, choice):
         except AttributeError:
             console("Keine Konfiguration im Arbeitsspeicher hinterlegt.", perm=True, mode="err")
             return None
+
+        config_str = config_str + "[Interface]\n"
+        console("Die Interface-Sektion enthält folgende Parameter:", end="", mode="info")
+        if server.clients[client_id-1].name != "":
+            config_str = config_str + "# Name = " + server.clients[client_id-1].name + "\n"
+            console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
+        for parameter in interface_config_parameters:
+            if getattr(server.clients[client_id-1], parameter.lower()) != "":
+                config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
+                             "\n"
+                console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
+        console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+
+        config_str = config_str + "\n[Peer]\n"
+        console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
+        for parameter in peer_config_parameters:
+            if getattr(server.clients[client_id-1], parameter.lower()) != "":
+                console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
+                config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1], parameter.lower()) +\
+                             "\n"
+        console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
+
+        return config_str
