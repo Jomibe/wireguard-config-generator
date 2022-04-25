@@ -8,6 +8,7 @@ Enthält alle Funktionen für das Importieren von Konfigurationen auf dem Dateis
 # Imports aus Standardbibliotheken
 import glob  # Für das Auffinden von Konfigurationsdateien mittels Wildcard
 import re  # Für das Parsen von Konfigurationsdateien
+from ipaddress import IPv4Interface  # Für Berechnungen der Netzwerktechnik
 
 # Imports von Drittanbietern
 
@@ -15,7 +16,6 @@ import re  # Für das Parsen von Konfigurationsdateien
 from config_management import calculate_publickey
 from constants import CONFIG_PARAMETERS
 from constants import WG_DIR
-# from constants import DEBUG
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import SERVER_CONFIG_FILENAME
 from constants import PEER_CONFIG_PARAMETERS
@@ -266,6 +266,12 @@ def import_configurations():
         # die spätere Zuordnung der Peer-Sektionen aus der Serverkonfiguration.
         calculate_publickey(server.clients[-1])
 
+        # Anpassung des Parameters address in den Clientkonfigurationen. Das Zeichenketten-Objekt wird in ein
+        # ipaddress-Objekt umgewandelt.
+        server.clients[-1].address = IPv4Interface(server.clients[-1].address)
+        console("IP-Adresse", server.clients[-1].address, "erfasst.", mode="succ")
+        # TODO kann eine Clientadresse ../32 teil eines Subnetzes sein?
+
         console("Folgende Clients wurden importiert:", mode="succ")
         for client in server.clients:
             console("Client", str(client.name), "mit privatem Schlüssel", str(client.privatekey), mode="succ",
@@ -273,5 +279,21 @@ def import_configurations():
 
     # ..des Servers
     parse_and_import(server)
+
+    # Anpassung des Parameters address in der Serverkonfiguration. Das Zeichenketten-Objekt wird in ein
+    # ipaddress-Objekt umgewandelt.
+    server.address = IPv4Interface(server.address)
+    if server.address.network.is_private is not True:
+        console("Das VPN-Netzwerk ist kein von der IANA für private Zwecke reserviertes Netzwerk.", mode="warn",
+                perm=True)
+
+    # Prüfung, ob die IP-Adressen der Clients im Subnetz des Servers liegen
+    index = 0
+    for client in server.clients:
+        index = index + 1
+        if client.address.ip not in list(server.address.network.hosts()):
+            console("IP-Adresse", client.address.ip, "von", "Client" + str(index), "ist nicht Teil des VPN-Netzwerks",
+                    server.address.network, mode="warn", perm=True, no_space=False)
+
 
     return server
