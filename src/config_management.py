@@ -450,7 +450,7 @@ def validate_client_id(server, choice):
             return None
     # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
     except AttributeError:
-        console("Keine Konfiguration im Arbeitsspeicher hinterlegt. Neue Konfiguration importieren oder erstellen.",
+        console("Keine Konfiguration im Arbeitsspeicher hinterlegt. Neue Konfiguration importieren oder anlegen.",
                 mode="err", perm=True)
         return None
 
