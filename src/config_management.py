@@ -8,9 +8,10 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 # Imports aus Standardbibliotheken
 import io
 import re  # Für das Parsen von Konfigurationsdateien
+from ipaddress import ip_interface  # Für netzwerktechnische Prüfungen
 
 # Imports von Drittanbietern
-from ipaddress import ip_network
+from ipaddress import ip_address
 from colorama import Style
 import qrcode
 
@@ -49,14 +50,15 @@ def print_configuration(server):
 
     # Prüfung, ob Clients hinterlegt sind
     if len(server.clients) < 1:
-        console("Keine Clientkonfigurationen hinterlegt.", mode="err", perm=True)
+        console("Keine Clientkonfigurationen hinterlegt.", mode="warn", perm=True)
         return
 
-    # Anzeige der Details pro Client, fettgedruckt: Bezeichnung, IP-Adresse, Anfang öffentlicher Schlüssel
-    print(f"{Style.BRIGHT}{'#':4}{'Name':12} | {'Privater Schlüssel':18}{Style.RESET_ALL}")
+    # Anzeige der Details pro Client, fettgedruckt: Bezeichnung, Anfang privater Schlüssel, IP-Adresse
+    print(f"{Style.BRIGHT}{'#':4}{'Name':12} | {'Privater Schlüssel':18} | {'IP-Adresse':18}{Style.RESET_ALL}")
     pos = 1
     for client in server.clients:
-        print(f"{Style.BRIGHT}{pos:<4}{Style.RESET_ALL}{client.name[:12]:12} | {client.privatekey[:15] + '...':18}")
+        print(f"{Style.BRIGHT}{pos:<4}{Style.RESET_ALL}{client.name[:12]:12} | {client.privatekey[:15] + '...':18} | "
+              f"{client.address}")  # IPv4 Adressen mit CIDR-Maske umfassen nie mehr als 18 Zeichen
         pos = pos + 1
 
 
@@ -75,31 +77,51 @@ def insert_client(server):
     Erstellt eine neue Clientkonfiguration. Werte für Parameter werden über die Kosole eingegeben.
     """
 
-    # TODO BUG In der Clientkonfiguration werden die Peer-Parameter Endpoint und AllowedIPs nicht gesetzt. Diese lauten
-    #  bei allen Clients gleich und sollten daher am Server hinterlegt werden. AllowedIPs
-    # TODO BUG In der Serverkonfiguration wird der Peer-Parameter AllowedIPs bei neuen Clients nicht gesetzt
+    # TODO Bearbeitung von Server Peer-Parametern
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
     # Ein neues ClientConfig Objekt wird erstellt, welches später zum ServerConfig Objekt hinzugefügt wird.
-    client = ClientConfig()
+    new_client = ClientConfig()
 
     # Ein Schlüsselpaar wird generiert und hinterlegt.
-    client.privatekey = keys.genkey()
-    client.client_publickey = keys.pubkey(client.privatekey)
+    new_client.privatekey = keys.genkey()
+    new_client.client_publickey = keys.pubkey(new_client.privatekey)
 
     # Der öffentliche Schlüssel des Servers wird hinterlegt
-    client.publickey = keys.pubkey(server.privatekey)
+    new_client.publickey = keys.pubkey(server.privatekey)
 
     # Eingabe eines Namens
     name = input("Client anlegen (Name?) > ")
-    client.name = name
+    new_client.name = name
 
-    # TODO Valide IP-Adresse muss ermittelt werden
     # Eingabe einer IP-Adresse
-    address = input("Client anlegen (IP-Adresse?) > ")
-    client.address = address
+    while True:
+        address = input("Client anlegen (IP-Adresse?) > ")
+        try:
+            new_client.address = ip_address(address)
+        except ValueError:
+            console("Ungültige Eingabe. Eingabe einer IPv4-Adresse erwartet.", mode="err", perm=True)
+            continue
+        break
+
+    # Befindet sich die angegebene IP-Adresse im Subnetz des VPN-Servers?
+    if new_client.address not in list(server.address.network.hosts()):
+        console("IP-Adresse", new_client.address.ip, "ist nicht Teil des VPN-Netzwerks", server.address.network,
+                mode="warn", perm=True, no_space=False)
+
+    # Auf IP-Adresskonflikte prüfen
+    if server.address.ip == new_client.address:
+        console("Es liegt ein IP-Adresskonflikt vor. Der Server verwendet dieselbe IP-Adresse.", mode="warn", perm=True)
+
+    index = 0
+    for client in server.clients:
+        console("Prüfe auf Übereinstimmung von", client.address, "mit", new_client.address, mode="info")
+        index = index + 1
+        if client.address == new_client.address:
+            console("Es liegt ein IP-Adresskonflikt vor.", "Client " + str(index), "verwendet dieselbe IP-Adresse.",
+                    mode="warn", perm=True)
 
     # Weitere Parameter abfragen, prüfen und einfügen
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
@@ -125,7 +147,7 @@ def insert_client(server):
             # Prüfe, ob der Parameter grundsätzlich gültig ist
             if key.lower() in config_parameters:
                 # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
-                setattr(client, key.lower(), value)
+                setattr(new_client, key.lower(), value)
                 console("Parameter hinterlegt", mode="succ")
             else:
                 console("Unbekannter Parameter", key, mode="warn", perm=True)
@@ -135,7 +157,7 @@ def insert_client(server):
             console("Ungültige Eingabe.", mode="err", perm=True)
             # continue
     # Clientkonfiguration zur Serverkonfiguration hinzufügen
-    server.clients.append(client)
+    server.clients.append(new_client)
     console("Client zur Konfiguration hinzugefügt.", mode="succ")
 
 
@@ -388,7 +410,7 @@ def change_network_size(server, choice):
         console("Berechnung des Subnets ungültig. Breche ab.", mode="err", perm=True)
         return
 
-    console("Neues Subnetz", ip4_network, "wird verwendet", mode="succ")
+    console("Neues Subnetz", ip4_network, "wird verwendet.", mode="succ")
 
     list_of_host_addr = list(ip4_network.hosts())
 
@@ -455,3 +477,14 @@ def validate_client_id(server, choice):
         return None
 
     return client_id
+
+
+def server_config_exists(server):
+    """
+    Überprüft, ob eine Serverkonfiguration vorliegt.
+    """
+    if server is None:
+        console("Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration importieren oder "
+                "anlegen.", mode="err", perm=True)
+        return False
+    return True

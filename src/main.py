@@ -40,6 +40,7 @@ from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
 from config_management import print_qr_code
+from config_management import server_config_exists
 from debugging import console
 from exporting import export_configurations
 from exporting import config_to_str
@@ -83,31 +84,27 @@ def main():
         if option == "1":
             console("Importiere Verbindungen...", mode="info")
             if server is not None:
-                choice = input(console("Konfiguration im Arbeitsspeicher überschreiben?", "[j/n]", mode="warn",
-                                       perm=True))
+                console("Konfiguration im Arbeitsspeicher überschreiben?", "[j/n]", mode="warn", perm=True)
+                choice = input("Verbindungen importieren (Bestätigung) > ")
                 if choice != "j":
                     console("Vorgang abgebrochen", mode="info", perm=True)
                     continue
             server = import_configurations()
             console("Verbindungen importiert.", mode="succ")
         elif option == "2":
-            if server is None:
-                console("Es existiert keine Konfiguration im Arbeitsspeicher. Neue Konfiguration importieren oder "
-                        "anlegen.", mode="err", perm=True)
-                continue
-            print_configuration(server)
-            console("Für Details", "ID", "eingeben, ", "0", "für den Server. Zurück zum Hauptmenü mit", ".",
-                    mode="info", perm=True)
-            while True:
+            if server_config_exists(server):
+                print_configuration(server)
+                console("Für Details", "ID", "eingeben, ", "0", "für den Server. Zurück zum Hauptmenü mit", ".",
+                        mode="info", perm=True)
                 choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
                 if choice == ".":
-                    break
+                    continue
                 print(config_to_str(server, choice))
         elif option == "3":
             if server is None:
                 console("Keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im Arbeitsspeicher angelegt "
-                        "werden?", "(j/n)", mode="err", perm="True")
-                choice = input()
+                        "werden?", "(j/n)", mode="warn", perm="True")
+                choice = input("Konfiguration anlegen (Bestätigung) > ")
 
                 if choice == "j":
                     server = create_server_config()
@@ -118,53 +115,61 @@ def main():
                     continue
             insert_client(server)
         elif option == "4":
-            choice = input("ID? ")
-            if choice == "0":
-                choice = input(console("Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?", "(j/n)", mode="warn",
-                                       perm=True))
-                if choice != "j":
-                    console("Vorgang abgebrochen", mode="info", perm=True)
+            if server_config_exists(server):
+                console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
+                        mode="info", perm=True)
+                choice = input("Konfiguration entfernen (Auswahl) > ")
+                if choice == "0":
+                    console("Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?", "(j/n)", mode="warn", perm=True)
+                    choice = input("Konfiguration entfernen (Bestätigung) > ")
+                    if choice != "j":
+                        console("Vorgang abgebrochen", mode="info", perm=True)
+                        continue
+                    server = None
                     continue
-                server = None
-                continue
-            delete_client(server, choice)
+                delete_client(server, choice)
         elif option == "5":
-            console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
-                    mode="info", perm=True)
-            try:
-                choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
-            except UnicodeDecodeError:
-                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
-                continue
-            change_client(server, choice)
+            if server_config_exists(server):
+                console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
+                        mode="info", perm=True)
+                try:
+                    choice = input(f"{Style.BRIGHT}Konfiguration ändern (Auswahl) > {Style.RESET_ALL}")
+                except UnicodeDecodeError:
+                    console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                    continue
+                change_client(server, choice)
         elif option == "6":
-            console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
-                    mode="info", perm=True)
-            try:
-                choice = input(f"{Style.BRIGHT}Schlüsselpaar erneuern (Auswahl) > {Style.RESET_ALL}")
-            except UnicodeDecodeError:
-                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
-                continue
-            change_client_keypair(server, choice)
+            if server_config_exists(server):
+                console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
+                        mode="info", perm=True)
+                try:
+                    choice = input(f"{Style.BRIGHT}Schlüsselpaar erneuern (Auswahl) > {Style.RESET_ALL}")
+                except UnicodeDecodeError:
+                    console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                    continue
+                change_client_keypair(server, choice)
         elif option == "7":
-            console("Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?", mode="info",
-                    perm=True)
-            try:
-                choice = input(f"{Style.BRIGHT}Netzwerkgröße anpassen (Auswahl) > {Style.RESET_ALL}")
-            except UnicodeDecodeError:
-                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
-                continue
-            change_network_size(server, choice)
+            if server_config_exists(server):
+                console("Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?", mode="info",
+                        perm=True)
+                try:
+                    choice = input(f"{Style.BRIGHT}Netzwerkgröße anpassen (Auswahl) > {Style.RESET_ALL}")
+                except UnicodeDecodeError:
+                    console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                    continue
+                change_network_size(server, choice)
         elif option == "8":
-            console("Welche Clientkonfiguration soll ausgegeben werden?", mode="info", perm=True)
-            try:
-                choice = input(f"{Style.BRIGHT}QR-Code ausgeben (Auswahl) > {Style.RESET_ALL}")
-            except UnicodeDecodeError:
-                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
-                continue
-            print_qr_code(server, choice)
+            if server_config_exists(server):
+                console("Welche Clientkonfiguration soll ausgegeben werden?", mode="info", perm=True)
+                try:
+                    choice = input(f"{Style.BRIGHT}QR-Code ausgeben (Auswahl) > {Style.RESET_ALL}")
+                except UnicodeDecodeError:
+                    console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                    continue
+                print_qr_code(server, choice)
         elif option == "9":
-            export_configurations(server)
+            if server_config_exists(server):
+                export_configurations(server)
         elif option == "?":
             print_menu()
         elif option == "0":

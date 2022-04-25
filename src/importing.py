@@ -8,7 +8,7 @@ Enthält alle Funktionen für das Importieren von Konfigurationen auf dem Dateis
 # Imports aus Standardbibliotheken
 import glob  # Für das Auffinden von Konfigurationsdateien mittels Wildcard
 import re  # Für das Parsen von Konfigurationsdateien
-from ipaddress import IPv4Interface  # Für Berechnungen der Netzwerktechnik
+from ipaddress import IPv4Interface, ip_address  # Für Berechnungen der Netzwerktechnik
 
 # Imports von Drittanbietern
 
@@ -267,10 +267,9 @@ def import_configurations():
         calculate_publickey(server.clients[-1])
 
         # Anpassung des Parameters address in den Clientkonfigurationen. Das Zeichenketten-Objekt wird in ein
-        # ipaddress-Objekt umgewandelt.
-        server.clients[-1].address = IPv4Interface(server.clients[-1].address)
+        # IP4Interface-Objekt umgewandelt.
+        server.clients[-1].address = ip_address(IPv4Interface(server.clients[-1].address).ip)
         console("IP-Adresse", server.clients[-1].address, "erfasst.", mode="succ")
-        # TODO kann eine Clientadresse ../32 teil eines Subnetzes sein?
 
         console("Folgende Clients wurden importiert:", mode="succ")
         for client in server.clients:
@@ -281,7 +280,7 @@ def import_configurations():
     parse_and_import(server)
 
     # Anpassung des Parameters address in der Serverkonfiguration. Das Zeichenketten-Objekt wird in ein
-    # ipaddress-Objekt umgewandelt.
+    # IP4Interface-Objekt umgewandelt. Dieses enthält eine IPv4-Adresse inkl. Maske.
     server.address = IPv4Interface(server.address)
     if server.address.network.is_private is not True:
         console("Das VPN-Netzwerk ist kein von der IANA für private Zwecke reserviertes Netzwerk.", mode="warn",
@@ -291,9 +290,8 @@ def import_configurations():
     index = 0
     for client in server.clients:
         index = index + 1
-        if client.address.ip not in list(server.address.network.hosts()):
+        if client.address not in list(server.address.network.hosts()):
             console("IP-Adresse", client.address.ip, "von", "Client" + str(index), "ist nicht Teil des VPN-Netzwerks",
                     server.address.network, mode="warn", perm=True, no_space=False)
-
 
     return server
