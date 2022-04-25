@@ -75,6 +75,10 @@ def insert_client(server):
     Erstellt eine neue Clientkonfiguration. Werte für Parameter werden über die Kosole eingegeben.
     """
 
+    # TODO BUG In der Clientkonfiguration werden die Peer-Parameter Endpoint und AllowedIPs nicht gesetzt. Diese lauten
+    #  bei allen Clients gleich und sollten daher am Server hinterlegt werden. AllowedIPs
+    # TODO BUG In der Serverkonfiguration wird der Peer-Parameter AllowedIPs bei neuen Clients nicht gesetzt
+
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
@@ -157,6 +161,7 @@ def change_client(server, choice):
     """
 
     # TODO BUG MINIMAL_CONFIG_PARAMETERS dürfen nicht "" lauten. Prüfung notwendig.
+    # TODO BUG name kann nicht geändert werden
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
