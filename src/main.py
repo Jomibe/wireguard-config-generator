@@ -21,6 +21,9 @@ Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 # Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
 # pylint: disable=import-error
 
+# Das Hauptmenü lässt sich nicht durch Refactoring verkleinern. Daher:
+# pylint: disable=too-many-branches, too-many-statements
+
 # Imports aus Standardbibliotheken
 import sys
 
