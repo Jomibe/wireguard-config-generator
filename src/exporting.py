@@ -169,7 +169,8 @@ def interface_to_str(peer):
     for parameter in interface_config_parameters:
         console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
         if getattr(peer, parameter.lower()) != "":
-            config_interface_str = config_interface_str + parameter + " = " + getattr(peer, parameter.lower()) + "\n"
+            config_interface_str = config_interface_str + parameter + " = " + str(getattr(peer, parameter.lower())) + \
+                                   "\n"
     console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
     return config_interface_str
