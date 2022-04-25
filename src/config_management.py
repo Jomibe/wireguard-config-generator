@@ -6,11 +6,13 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 # pylint: disable=import-error
 
 # Imports aus Standardbibliotheken
+import io
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
 from ipaddress import ip_network
 from colorama import Fore, Style
+import qrcode
 
 # Eigene Imports
 from client_config import ClientConfig
@@ -20,6 +22,7 @@ from constants import INTERFACE_CONFIG_PARAMETERS
 from constants import DEBUG
 from constants import RE_MATCH_KEY
 from constants import RE_MATCH_KEY_VALUE
+from exporting import config_to_str
 from networking import get_cidr_mask_from_hosts
 from server_config import ServerConfig
 import keys
@@ -453,3 +456,33 @@ def update_client_config_parameter(peer, parameter, value):
     """
     Setzt den Wert eines Parameters in der Datenstruktur im Arbeitsspeicher für einen Peer (Server oder Client)
     """
+
+
+def print_qr_code(server, choice):
+    """
+    Gibt die Konfiguration eines Clients auf der Konsole als QR-Code aus. Der Code kann mit der WireGuard App für
+    Android und iOS eingelesen und die Konfiguration so komfortabel importiert werden.
+    """
+
+    # Parameterprüfungen
+    try:
+        client_id = int(choice)
+    except ValueError:
+        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+        return
+    try:
+        del server.clients[client_id - 1]
+    except IndexError:
+        print(f"{Fore.RED}Fehler: Ungültige ID eingegeben.{Style.RESET_ALL}")
+    except AttributeError:
+        print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher.{Style.RESET_ALL}")
+
+    # TODO: Fehlerausgaben -> console()
+
+    # QR-Code für server.clients[client_id] ausgeben
+    qr = qrcode.QRCode()
+    qr.add_data(config_to_str(server, client_id))
+    f = io.StringIO()
+    qr.print_ascii(out=f)
+    f.seek(0)
+    print(f.read())

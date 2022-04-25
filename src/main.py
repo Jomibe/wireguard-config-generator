@@ -36,6 +36,7 @@ from config_management import change_network_size
 from config_management import create_server_config
 from config_management import delete_client
 from config_management import insert_client
+from config_management import print_qr_code
 from debugging import console
 from exporting import export_configurations
 from exporting import config_to_str
@@ -151,6 +152,14 @@ def main():
                 console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
             change_network_size(server, choice)
+        elif option == "8":
+            console("Welche Clientkonfiguration soll ausgegeben werden?", mode="info", perm=True)
+            try:
+                choice = input(f"{Style.BRIGHT}QR-Code ausgeben (Auswahl) > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                continue
+            print_qr_code(server, choice)
         elif option == "9":
             export_configurations(server)
         elif option == "?":
