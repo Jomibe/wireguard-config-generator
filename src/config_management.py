@@ -11,7 +11,7 @@ import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
 from ipaddress import ip_network
-from colorama import Fore, Style
+from colorama import Style
 import qrcode
 
 # Eigene Imports
@@ -19,9 +19,9 @@ from client_config import ClientConfig
 from constants import CONFIG_PARAMETERS
 from constants import MINIMAL_CONFIG_PARAMETERS
 from constants import INTERFACE_CONFIG_PARAMETERS
-from constants import DEBUG
 from constants import RE_MATCH_KEY
 from constants import RE_MATCH_KEY_VALUE
+from debugging import console
 from exporting import config_to_str
 from networking import get_cidr_mask_from_hosts
 from server_config import ServerConfig
@@ -35,22 +35,21 @@ def print_configuration(server):
 
     # Parameterprüfungen
     if not isinstance(server, ServerConfig):
-        print(f"{Fore.RED}Fehler: Serverkonfiguration ist ungültig{Style.RESET_ALL}")
+        console("Serverkonfiguration ist ungültig", mode="err", perm=True)
         return
 
     # Prüfung, ob erforderliche Parameter vorhanden sind. Alle fehlenden Parameter werden ausgegeben.
     minimal_parameters_are_valid = True
     for parameter in MINIMAL_CONFIG_PARAMETERS:
         if getattr(server, parameter) == "":
-            print(f"{Fore.RED}Fehler: Serverkonfiguration ist nicht vollständig. Parameter {Style.RESET_ALL}{parameter}"
-                  f"{Fore.RED} fehlt{Style.RESET_ALL}")
+            console("Serverkonfiguration ist nicht vollständig. Parameter", parameter, "fehlt", mode="err", perm=True)
             minimal_parameters_are_valid = False
     if not minimal_parameters_are_valid:
         return
 
     # Prüfung, ob Clients hinterlegt sind
     if len(server.clients) < 1:
-        print(f"{Fore.RED}Fehler: keine Clientkonfigurationen hinterlegt.{Style.RESET_ALL}")
+        console("Keine Clientkonfigurationen hinterlegt.", mode="err", perm=True)
         return
 
     # Anzeige der Details pro Client, fettgedruckt: Bezeichnung, IP-Adresse, Anfang öffentlicher Schlüssel
@@ -66,10 +65,9 @@ def calculate_publickey(client):
     Berechnet die öffentlichen Schlüssel der Clients anhand der privaten Schlüssel.
     """
     client.client_publickey = keys.pubkey(client.privatekey)
-    if DEBUG:
-        print(f"{Fore.GREEN}Erfolg: Öffentlicher Schlüssel {Style.RESET_ALL}{client.client_publickey[:5]}..."
-              f"{Fore.GREEN} für privaten Schlüssel{Style.RESET_ALL} {client.privatekey[:5]}...{Fore.GREEN} "
-              f"berechnet und hinterlegt.{Style.RESET_ALL}")
+
+    console("Öffentlicher Schlüssel", client.client_publickey[:5] + "...", "für privaten Schlüssel",
+            client.privatekey[:5] + "...", "berechnet und hinterlegt.", mode="succ")
 
 
 def insert_client(server):
@@ -100,13 +98,13 @@ def insert_client(server):
     client.address = address
 
     # Weitere Parameter abfragen, prüfen und einfügen
-    print(f"{Fore.BLUE}Info: Bitte weitere Parameter eintragen. Zurück mit{Style.RESET_ALL} .")
+    console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
     # TODO BUG: Falsche Parameter werden nicht bemängelt
     while True:
         try:
             input_line = input("Client anlegen (zusätzliche Parameter?) > ")
         except UnicodeDecodeError:
-            print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
 
         # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
         match = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
@@ -116,31 +114,25 @@ def insert_client(server):
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
             key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
             value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
-            if DEBUG:
-                print(f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
-                      f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+            console("Parameter", key, "mit Wert", value, "erkannt", mode="succ")
 
-            if DEBUG:
-                print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
-                      f"enthalten ist{Style.RESET_ALL}")
+            console("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.", mode="info")
 
             # Prüfe, ob der Parameter grundsätzlich gültig ist
             if key.lower() in config_parameters:
                 # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                 setattr(client, key.lower(), value)
-                if DEBUG:
-                    print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                console("Parameter hinterlegt", mode="succ")
             else:
-                print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
+                console("Unbekannter Parameter", key, mode="warn", perm=True)
         elif input_line == ".":
             break
         else:
-            print(f"{Fore.RED}Fehler: Ungültige Eingabe.{Style.RESET_ALL}")
+            console("Ungültige Eingabe.", mode="err", perm=True)
             # continue
     # Clientkonfiguration zur Serverkonfiguration hinzufügen
     server.clients.append(client)
-    if DEBUG:
-        print(f"{Fore.GREEN}Erfolg: Client zur Konfiguration hinzugefügt{Style.RESET_ALL}")
+    console("Client zur Konfiguration hinzugefügt.", mode="succ")
 
 
 def delete_client(server, choice):
@@ -149,17 +141,13 @@ def delete_client(server, choice):
     entspricht der Serverkonfiguration. Clients haben aufsteigende Nummern ab 1.
     """
 
-    try:
-        client_id = int(choice)
-    except ValueError:
-        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+    # Parameterprüfungen
+    client_id = validate_client_id(server, choice)
+    if client_id is None:
+        console("Breche ab.", mode="err", perm=True)
         return
-    try:
-        del server.clients[client_id - 1]
-    except IndexError:
-        print(f"{Fore.RED}Fehler: Ungültige ID eingegeben.{Style.RESET_ALL}")
-    except AttributeError:
-        print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher.{Style.RESET_ALL}")
+
+    del server.clients[client_id - 1]
 
 
 def change_client(server, choice):
@@ -177,8 +165,8 @@ def change_client(server, choice):
     # Kleinbuchstaben
     interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
 
-    print(f"Parameter {Fore.BLUE}ohne Wert eingeben für Ausgabe des derzeitigen Werts. {Style.RESET_ALL}Parameter = "
-          f"Wert{Fore.BLUE} eingeben für Änderung des Werts. Zurück mit {Style.RESET_ALL}.")
+    console("", "Parameter ", "ohne Wert eingeben für Ausgabe des derzeitigen Werts.", "Parameter = Wert",
+            "eingeben für Änderung des Werts. Zurück mit", ".", mode="info", perm=True, no_space=True)
 
     if choice == "0":
         # Serverkonfiguration soll geändert werden. Es ist nur möglich, die Interface-Sektion zu bearbeiten. Peer-
@@ -188,7 +176,7 @@ def change_client(server, choice):
             try:
                 input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Server) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
@@ -199,27 +187,21 @@ def change_client(server, choice):
                 break
 
             # Prüfe, ob der Parameter ein unterstützter offizieller Parameter der Interface-Sektion ist
-            elif match_key_value:
+            if match_key_value:
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
                 key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
                 value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
-                if DEBUG:
-                    print(
-                        f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
-                        f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+                console("Parameter", key, "mit Wert", value, "erkannt.", mode="succ")
 
-                if DEBUG:
-                    print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
-                          f"enthalten ist{Style.RESET_ALL}")
+                console("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.", mode="info")
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist
                 if key.lower() in interface_config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(server, key.lower(), value)
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                    console("Parameter hinterlegt.", mode="succ")
                 else:
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+                    console("Unbekannter Parameter", input_line, mode="warn", perm="True")
 
             elif match_key:
                 # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
@@ -232,34 +214,24 @@ def change_client(server, choice):
                     print(getattr(server, key.lower()))
                 else:
                     # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
+                    console("Unbekannter Parameter", key, mode="warn", perm=True)
             else:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
+                console("Ungültige Eingabe.", mode="err", perm=True)
 
     else:
         # Eine der Clientkonfigurationen soll geändert werden
 
-        try:
-            client_id = int(choice)
-        except ValueError:
-            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
-            return
-        try:
-            if len(server.clients) < client_id:
-                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
-                      f"{Style.RESET_ALL}")
-                return
-        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
-        except AttributeError:
-            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt. Neue Konfiguration importieren"
-                  f" oder erstellen.{Style.RESET_ALL}")
+        # Parameterprüfungen
+        client_id = validate_client_id(server, choice)
+        if client_id is None:
+            console("Breche ab.", mode="err", perm=True)
             return
 
         while True:
             try:
                 input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Client {client_id}) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe. Bitte keine Akzente eingeben.")
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
@@ -275,24 +247,18 @@ def change_client(server, choice):
                 # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
                 key = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[1].strip()
                 value = re.split(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)[2].strip()
-                if DEBUG:
-                    print(
-                        f"{Fore.GREEN}Erfolg: Parameter {Style.RESET_ALL}{key}{Fore.GREEN} mit Wert {Style.RESET_ALL}"
-                        f"{value}{Fore.GREEN} erkannt{Style.RESET_ALL}")
+                console("Parameter", key, "mit Wert", value, "erkannt", mode="succ")
 
-                if DEBUG:
-                    print(f"{Fore.BLUE}Info: Prüfe, ob der Parameter in der Menge der unterstützten Parameter "
-                          f"enthalten ist{Style.RESET_ALL}")
+                console("Prüfe, ob der Parameter in der Menge der unterstützten Parameter enthalten ist.", mode="info")
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist
                 if key.lower() in config_parameters:
                     # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                     setattr(server.clients[client_id-1], key.lower(), value)
-                    if DEBUG:
-                        print(f"{Fore.GREEN}Erfolg: Parameter hinterlegt{Style.RESET_ALL}")
+                    console("Parameter hinterlegt", mode="succ")
 
                 else:
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{input_line}")
+                    console("Unbekannter Parameter", input_line, mode="warn", perm=True)
 
             elif match_key:
                 # Der Parametername wird ohne Leerzeichen am Anfang und Ende hinterlegt
@@ -306,10 +272,10 @@ def change_client(server, choice):
                     print(getattr(server.clients[client_id-1], key.lower()))
                 else:
                     # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
-                    print(f"{Fore.YELLOW}Warnung: Unbekannter Parameter {Style.RESET_ALL}{key}")
+                    console("Unbekannter Parameter.", key, mode="warn", perm=True)
 
             else:
-                print(f"{Fore.RED}Fehler: Ungültige Eingabe{Style.RESET_ALL}")
+                console("Ungültige Eingabe.", mode="err", perm=True)
 
 
 def create_server_config():
@@ -344,8 +310,7 @@ def change_client_keypair(server, choice):
     """
 
     if choice == "0":
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Ändere das Schlüsselpaar des Servers.")
+        console("Ändere das Schlüsselpaar des Servers.", mode="info")
 
         server.privatekey = keys.genkey()
         publickey = keys.pubkey(server.privatekey)
@@ -354,23 +319,13 @@ def change_client_keypair(server, choice):
             client.publickey = publickey
 
     else:
-        try:
-            client_id = int(choice)
-        except ValueError:
-            print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
-            return
-        try:
-            if len(server.clients) < client_id:
-                print(f"{Fore.RED}Fehler: Konfiguration {Style.RESET_ALL}{client_id}{Fore.RED} existiert nicht"
-                      f"{Style.RESET_ALL}")
-                return
-        # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
-        except AttributeError:
-            print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher hinterlegt.{Style.RESET_ALL}")
+        # Parameterprüfungen
+        client_id = validate_client_id(server, choice)
+        if client_id is None:
+            console("Breche ab.", mode="err", perm=True)
             return
 
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Ändere das Schlüsselpaar des Clients {client_id}.")
+        console("Ändere das Schlüsselpaar des Clients", client_id, ".", mode="info")
 
         server.clients[client_id-1].privatekey = keys.genkey()
         server.clients[client_id-1].client_publickey = keys.pubkey(server.clients[client_id-1].privatekey)
@@ -388,23 +343,22 @@ def change_network_size(server, choice):
     try:
         number_of_hosts = int(choice)
     except ValueError:
-        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
+        console("Eingabe einer Zahl erwartet.", mode="err", perm=True)
         return
 
     if number_of_hosts < len(server.clients):
-        print(f"{Fore.RED}Fehler: Die Konfiguration im Arbeitsspeicher umfasst {Style.RESET_ALL}{len(server.clients)}"
-              f"{Fore.RED} Clients. Es kann keine Netzwerkgröße für eine geringere Anzahl eingestellt werden. Breche ab"
-              f"{Style.RESET_ALL}")
+        console("Die Konfiguration im Arbeitsspeicher umfasst", len(server.clients),
+                "Clients. Es kann keine Netzwerkgröße für eine geringere Anzahl eingestellt werden. Breche ab.",
+                mode="err", perm=True)
         return
 
     # CIDR-Maske berechnen
     cidr_mask = get_cidr_mask_from_hosts(number_of_hosts)
     if cidr_mask is None:  # Bei einem Fehler wird None zurückgegeben
-        print(f"{Fore.RED}Fehler: Breche ab.{Style.RESET_ALL}")
+        console("Breche ab.", mode="err", perm=True)
         return
-    print(f"{Fore.GREEN}Erfolg: CIDR-Maske {cidr_mask} berechnet{Style.RESET_ALL}")
+    console("CIDR-Maske", cidr_mask, "berechnet.", mode="succ")
 
-    ip4_network_class = ""
     # Netzklasse A, B oder C festlegen
     if cidr_mask >= 24:
         ip4_network_class = "c"
@@ -413,10 +367,10 @@ def change_network_size(server, choice):
     elif cidr_mask >= 8:
         ip4_network_class = "a"
     else:
-        print(f"Fehler: Ungültige CIDR-Maske für ein privates Netzwerk berechnet. Breche ab.")
+        console("Ungültige CIDR-Maske für ein privates Netzwerk berechnet. Breche ab.", mode="err", perm=True)
         return
 
-    print(f"{Fore.GREEN}Erfolg: Netzklasse {ip4_network_class.upper()} festgelegt{Style.RESET_ALL}")
+    console("Netzklasse", ip4_network_class.upper(), "festgelegt.", mode="succ")
 
     # Geeignetes IPv4-Netzwerk festlegen
     if ip4_network_class == "a":
@@ -426,30 +380,26 @@ def change_network_size(server, choice):
     elif ip4_network_class == "c":
         ip4_network = ip_network(f'192.168.0.0/{cidr_mask}')
     else:
-        print(f"{Fore.RED}Fehler: Berechnung des Subnets ungültig. Breche ab.")
+        console("Berechnung des Subnets ungültig. Breche ab.", mode="err", perm=True)
         return
 
-    if DEBUG:
-        print(f"{Fore.GREEN}Erfolg: Neues Subnetz {Style.RESET_ALL}{ip4_network}{Fore.GREEN} wird verwendet"
-              f"{Style.RESET_ALL}")
+    console("Neues Subnetz", ip4_network, "wird verwendet", mode="succ")
 
     list_of_host_addr = list(ip4_network.hosts())
 
     # Dem Server die letzte IP-Adresse im Subnetz zuweisen
     try:
-        print(f"{Fore.BLUE}Info: Weise Server die IP-Adresse {Style.RESET_ALL}{list_of_host_addr[-1]}{Fore.BLUE} zu.")
+        console("Weise dem Server die IP-Adresse", list_of_host_addr[-1], "zu.", mode="info")
         server.address = list_of_host_addr[-1]
     except AttributeError:
-        print(f"{Fore.RED}Fehler: Es ist keine Serverkonfiguration vorhanden. Neue erstellen oder importieren. Breche "
-              f"ab.{Style.RESET_ALL}")
+        console("Es ist keine Serverkonfiguration vorhanden. Neue erstellen oder importieren. Breche ab.",
+                mode="err", perm=True)
 
     # Den Clients vom Anfang aufsteigende Adressen zuweisen
     for i in range(len(server.clients)):
         server.clients[i].address = list_of_host_addr[i]
-        if DEBUG:
-            print(f"{Fore.BLUE}Info: Weise Client mit privatem Schlüssel {Style.RESET_ALL}"
-                  f"{server.clients[i].privatekey:5}...{Fore.BLUE} die "
-                  f"IP-Adresse {Style.RESET_ALL}{list_of_host_addr[i]}{Fore.BLUE} zu.{Style.RESET_ALL}")
+        console("Weise Client mit privatem Schlüssel", f"{server.clients[i].privatekey:5}" + "...", "die IP-Adresse",
+                list_of_host_addr[i], "zu.", mode="info")
 
 
 def update_client_config_parameter(peer, parameter, value):
@@ -465,24 +415,38 @@ def print_qr_code(server, choice):
     """
 
     # Parameterprüfungen
+    client_id = validate_client_id(server, choice)
+    if client_id is None:
+        console("Breche ab.", mode="err", perm=True)
+        return
+
+    # QR-Code für server.clients[client_id] ausgeben
+    client_qr_code = qrcode.QRCode()
+    client_qr_code.add_data(config_to_str(server, client_id))
+    output = io.StringIO()
+    client_qr_code.print_ascii(out=output)
+    output.seek(0)
+    print(output.read())
+
+
+def validate_client_id(server, choice):
+    """
+    Prüft, ob der übergebene Parameter ein Ganzzahl-Objekt ist und ein Client mit dieser ID existiert.
+    """
+
     try:
         client_id = int(choice)
     except ValueError:
-        print(f"{Fore.RED}Fehler: Eingabe einer Zahl erwartet.{Style.RESET_ALL}")
-        return
+        console("Eingabe einer Zahl erwartet.", mode="err", perm=True)
+        return None
     try:
-        del server.clients[client_id - 1]
-    except IndexError:
-        print(f"{Fore.RED}Fehler: Ungültige ID eingegeben.{Style.RESET_ALL}")
+        if len(server.clients) < client_id:
+            console("Konfiguration", client_id, "existiert nicht", mode="err", perm=True)
+            return None
+    # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
     except AttributeError:
-        print(f"{Fore.RED}Fehler: Keine Konfiguration im Arbeitsspeicher.{Style.RESET_ALL}")
+        console("Keine Konfiguration im Arbeitsspeicher hinterlegt. Neue Konfiguration importieren oder erstellen.",
+                mode="err", perm=True)
+        return None
 
-    # TODO: Fehlerausgaben -> console()
-
-    # QR-Code für server.clients[client_id] ausgeben
-    qr = qrcode.QRCode()
-    qr.add_data(config_to_str(server, client_id))
-    f = io.StringIO()
-    qr.print_ascii(out=f)
-    f.seek(0)
-    print(f.read())
+    return client_id
