@@ -101,7 +101,7 @@ def config_to_str(server, choice):
         client_id = int(choice)
     except ValueError:
         console("Eingabe einer Zahl erwartet.", perm=True, mode="err")
-        return None
+        return ""
 
     if client_id == 0:
         # Serverkonfiguration schreiben
@@ -126,11 +126,11 @@ def config_to_str(server, choice):
     try:
         if len(server.clients) < client_id:
             console("Konfiguration", client_id, "existiert nicht", perm=True, mode="err")
-            return None
+            return ""
     # Wenn das Attribut clients nicht vorhanden ist, ist server nicht von der Klasse ServerConfig
     except AttributeError:
         console("Keine Konfiguration im Arbeitsspeicher hinterlegt.", perm=True, mode="err")
-        return None
+        return ""
 
     config_str = config_str + interface_to_str(server.clients[client_id-1])
 
