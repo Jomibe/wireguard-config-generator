@@ -107,7 +107,7 @@ def insert_client(server):
 
     # Befindet sich die angegebene IP-Adresse im Subnetz des VPN-Servers?
     if new_client.address not in list(server.address.network.hosts()):
-        console("IP-Adresse", new_client.address.ip, "ist nicht Teil des VPN-Netzwerks", server.address.network,
+        console("IP-Adresse", new_client.address, "ist nicht Teil des VPN-Netzwerks", server.address.network,
                 mode="warn", perm=True, no_space=False)
 
     # Auf IP-Adresskonflikte prüfen
