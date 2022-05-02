@@ -429,12 +429,6 @@ def change_network_size(server, choice):
                 list_of_host_addr[i], "zu.", mode="info")
 
 
-def update_client_config_parameter(peer, parameter, value):
-    """
-    Setzt den Wert eines Parameters in der Datenstruktur im Arbeitsspeicher für einen Peer (Server oder Client)
-    """
-
-
 def print_qr_code(server, choice):
     """
     Gibt die Konfiguration eines Clients auf der Konsole als QR-Code aus. Der Code kann mit der WireGuard App für
