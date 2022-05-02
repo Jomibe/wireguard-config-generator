@@ -284,6 +284,14 @@ def change_client(server, choice):
                     setattr(server.clients[client_id-1], key.lower(), value)
                     console("Parameter hinterlegt", mode="succ")
 
+                elif key.lower() == "name":
+                    setattr(server.clients[client_id-1], key.lower(), value)
+                    console("Bezeichnung hinterlegt", mode="succ")
+
+                elif key.lower() == "filename":
+                    setattr(server.clients[client_id - 1], key.lower(), value)
+                    console("Bezeichnung hinterlegt", mode="succ")
+
                 else:
                     console("Unbekannter Parameter", input_line, mode="warn", perm=True)
 
@@ -297,6 +305,13 @@ def change_client(server, choice):
                 if key.lower() in config_parameters:
                     # Falls ja, gebe den Wert aus
                     print(getattr(server.clients[client_id-1], key.lower()))
+
+                elif key.lower() == "name":
+                    print(getattr(server.clients[client_id-1], key.lower()))
+
+                elif key.lower() == "filename":
+                    print(getattr(server.clients[client_id-1], key.lower()))
+
                 else:
                     # Es handelt sich nicht um einen unbekannten Parameter. Der Benutzer muss informiert werden.
                     console("Unbekannter Parameter.", key, mode="warn", perm=True)
