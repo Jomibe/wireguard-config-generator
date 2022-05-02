@@ -8,7 +8,6 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 # Imports aus Standardbibliotheken
 import io
 import re  # Für das Parsen von Konfigurationsdateien
-from ipaddress import ip_interface  # Für netzwerktechnische Prüfungen
 
 # Imports von Drittanbietern
 from ipaddress import ip_address
