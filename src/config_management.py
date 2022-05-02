@@ -124,7 +124,6 @@ def insert_client(server):
 
     # Weitere Parameter abfragen, prüfen und einfügen
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
-    # TODO BUG: Falsche Parameter werden nicht bemängelt
     while True:
         try:
             input_line = input("Client anlegen (zusätzliche Parameter?) > ")
@@ -320,7 +319,7 @@ def create_server_config():
     """
     Erstelle eine neue Konfiguration.
     """
-    
+
     server = ServerConfig()
 
     # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
