@@ -399,6 +399,7 @@ def change_network_size(server, choice):
     console("Netzklasse", ip4_network_class.upper(), "festgelegt.", mode="succ")
 
     # Geeignetes IPv4-Netzwerk festlegen
+    ip_network = None
     if ip4_network_class == "a":
         ip4_network = ip_network(f'10.0.0.0/{cidr_mask}')
     elif ip4_network_class == "b":
