@@ -320,9 +320,7 @@ def create_server_config():
     """
     Erstelle eine neue Konfiguration.
     """
-
-    # TODO Feature: weitere Parameter direkt bei der Erstellung eingeben
-
+    
     server = ServerConfig()
 
     # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
