@@ -301,7 +301,6 @@ def change_client(server, choice):
 
                 # Prüfe, ob der Parameter grundsätzlich gültig ist. Da es sich hierbei um einen Client handelt, können
                 # alle Parameter in CONFIG_PARAMETERS ausgegeben werden.
-                # TODO BUG: Leerzeichen am Ende führen zu einer Nichterkennung des Parameters
                 if key.lower() in config_parameters:
                     # Falls ja, gebe den Wert aus
                     print(getattr(server.clients[client_id-1], key.lower()))
