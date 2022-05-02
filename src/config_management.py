@@ -7,6 +7,7 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 
 # Imports aus Standardbibliotheken
 import io
+from ipaddress import ip_network  # Für netzwerktechnische Prüfungen
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
@@ -414,7 +415,6 @@ def change_network_size(server, choice):
     console("Netzklasse", ip4_network_class.upper(), "festgelegt.", mode="succ")
 
     # Geeignetes IPv4-Netzwerk festlegen
-    ip_network = None
     if ip4_network_class == "a":
         ip4_network = ip_network(f'10.0.0.0/{cidr_mask}')
     elif ip4_network_class == "b":
