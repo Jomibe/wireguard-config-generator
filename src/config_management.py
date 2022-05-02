@@ -438,10 +438,11 @@ def change_network_size(server, choice):
                 mode="err", perm=True)
 
     # Den Clients vom Anfang aufsteigende Adressen zuweisen
-    for i in range(len(server.clients)):
-        server.clients[i].address = list_of_host_addr[i]
-        console("Weise Client mit privatem Schlüssel", f"{server.clients[i].privatekey:5}" + "...", "die IP-Adresse",
-                list_of_host_addr[i], "zu.", mode="info")
+    index = 0
+    for client in server.clients:
+        client.address = list_of_host_addr[index]
+        console("Weise Client mit privatem Schlüssel", f"{client.privatekey:5}" + "...", "die IP-Adresse",
+                list_of_host_addr[index], "zu.", mode="info")
 
 
 def print_qr_code(server, choice):
