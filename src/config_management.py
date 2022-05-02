@@ -183,7 +183,6 @@ def change_client(server, choice):
     0 entspricht der Serverkonfiguration. Clients haben aufsteigende Nummern ab 1.
     """
 
-    # TODO BUG MINIMAL_CONFIG_PARAMETERS dürfen nicht "" lauten. Prüfung notwendig.
     # TODO BUG name kann nicht geändert werden
 
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
