@@ -150,8 +150,8 @@ def main():
                 change_client_keypair(server, choice)
         elif option == "7":
             if server_config_exists(server):
-                console("Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?", mode="info",
-                        perm=True)
+                console("Wie viele Hosts sollen im Netzwerk insgesamt verwaltet werden (Clients + Server)?",
+                        mode="info", perm=True)
                 try:
                     choice = input(f"{Style.BRIGHT}Netzwerkgröße anpassen (Auswahl) > {Style.RESET_ALL}")
                 except UnicodeDecodeError:
