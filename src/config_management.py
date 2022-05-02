@@ -7,11 +7,10 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 
 # Imports aus Standardbibliotheken
 import io
-from ipaddress import ip_network  # Für netzwerktechnische Prüfungen
+from ipaddress import ip_address, ip_network  # Für netzwerktechnische Prüfungen
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
-from ipaddress import ip_address
 from colorama import Style
 import qrcode
 
@@ -127,7 +126,6 @@ def insert_client(server):
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
     # TODO BUG: Falsche Parameter werden nicht bemängelt
     while True:
-        input_line = None
         try:
             input_line = input("Client anlegen (zusätzliche Parameter?) > ")
         except UnicodeDecodeError:
@@ -205,6 +203,7 @@ def change_client(server, choice):
                 input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Server) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
                 console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                continue
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
@@ -260,12 +259,11 @@ def change_client(server, choice):
                 input_line = input(f"{Style.BRIGHT}Konfiguration ändern (Client {client_id}) > {Style.RESET_ALL}")
             except UnicodeDecodeError:
                 console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                continue
 
             # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
-
             match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
-            
             if input_line == ".":
                 # Bei Eingabe von . zurück
                 break
