@@ -126,10 +126,12 @@ def insert_client(server):
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
     # TODO BUG: Falsche Parameter werden nicht bemängelt
     while True:
+        input_line = None
         try:
             input_line = input("Client anlegen (zusätzliche Parameter?) > ")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
 
         # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
         match = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
