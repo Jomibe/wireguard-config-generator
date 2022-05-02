@@ -192,8 +192,8 @@ def change_client(server, choice):
     # Kleinbuchstaben
     interface_config_parameters = [parameter.lower() for parameter in INTERFACE_CONFIG_PARAMETERS]
 
-    console("", "Parameter ", "ohne Wert eingeben für Ausgabe des derzeitigen Werts.", "Parameter = Wert",
-            "eingeben für Änderung des Werts. Zurück mit", ".", mode="info", perm=True, no_space=True)
+    console("", "Parameter ", "ohne Wert eingeben für Ausgabe des derzeitigen Werts. ", "Parameter = Wert ",
+            "eingeben für Änderung des Werts. Zurück mit", " . ", mode="info", perm=True, no_space=True)
 
     if choice == "0":
         # Serverkonfiguration soll geändert werden. Es ist nur möglich, die Interface-Sektion zu bearbeiten. Peer-
