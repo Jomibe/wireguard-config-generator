@@ -189,6 +189,7 @@ def main():
         elif option == "?":
             print_menu()
         elif option == "0":
+            # TODO BUG Es wird nicht (immer) geprüft, ob ungespeicherte Änderungen vorliegen
             repeat = False
         else:
             console("Ungültige Eingabe. Für Hilfe", "?", "eingeben.", mode="err", perm=True)

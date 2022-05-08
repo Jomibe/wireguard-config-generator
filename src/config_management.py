@@ -328,6 +328,8 @@ def create_server_config():
     Erstelle eine neue Konfiguration.
     """
 
+    # TODO Standardmäßig sollte der Client Parameter endpoint und allowedips gesetzt werden
+
     server = ServerConfig()
 
     # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
