@@ -21,7 +21,7 @@ def check_file(filename):
     """
     # Prüfung, ob der Pfad existiert.
     if not Path(filename).exists():
-        raise SystemExit(console("Fehler: Der Pfad", filename, "existiert nicht.", mode="err", perm=True))
+        raise SystemExit(console("Der Pfad", filename, "existiert nicht.", mode="err", perm=True))
 
     # Prüfung, ob der Pfad auf eine Datei zeigt.
     if not Path(filename).is_file():
