@@ -41,9 +41,11 @@ from config_management import delete_client
 from config_management import insert_client
 from config_management import print_qr_code
 from config_management import server_config_exists
+from constants import WG_DIR
 from debugging import console
 from exporting import export_configurations
 from exporting import config_to_str
+from file_management import check_dir
 
 
 def print_menu():
@@ -78,6 +80,19 @@ def main():
     repeat = True
     while repeat:
         console("Detaillierte Ausgaben zum Programmablauf sind eingeschaltet.", mode="info")
+
+        try:
+            check_dir(WG_DIR)
+        except (FileNotFoundError, NotADirectoryError) :
+            console("Das Verzeichnis", WG_DIR, "existiert nicht. Konfiguration aus dem Arbeitsspeicher kann in diesem "
+                                               "Zustand nicht auf das Dateisystem geschrieben werden. Bitte die Datei",
+                    "constants.py", "anpassen.", mode="warn", perm=True)
+        except PermissionError:
+            console("Das Verzeichnis", WG_DIR, "besitzt unzureichende Berechtigungen. Konfiguration aus dem "
+                                               "Arbeitsspeicher kann in diesem Zustand nicht auf das Dateisystem "
+                                               "geschrieben werden. Bitte die Datei", "constants.py",
+                    "anpassen oder das Programm mit erhöhten Benutzerberechtigungen ausführen.", mode="warn", perm=True)
+
 
         option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
 
