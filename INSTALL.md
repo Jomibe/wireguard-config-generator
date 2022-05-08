@@ -27,7 +27,7 @@ Danach folgt die Installation der Abhängigkeiten auf dem Hostsystem
 
 Die Inhalte des GitHub Repositories werden mittels `git clone` auf das Zielsystem kopiert.
 
-Da die Software aufgrund der Berechtigungen des Verzeichnisses `/etc/wireguard` als Benutzer mit erhöhten Berechtigungen `root` ausgeführt werden muss, wird aus Sicherheitsgründen eine virtuelle Python Umgebung mit `python3 -m venv wireguard-mgmt-env` erstellt und mit `source wireguard-mgmt-env/bin/activate` verwendet. Nun ist eine sichere Verwendung als Superuser möglich.
+Da die Software aufgrund der Berechtigungen des Verzeichnisses `/etc/wireguard` als Benutzer mit erhöhten Berechtigungen `root` ausgeführt werden muss, wird aus Sicherheitsgründen eine virtuelle Python Umgebung mit `python3 -m venv wireguard-mgmt-env` erstellt und mit `source wireguard-mgmt-env/bin/activate` verwendet. Nun ist eine sichere Verwendung als Superuser möglich. Nach einer Neuanmeldung muss das `source` Kommando wiederholt werden.
 
 Im Anschluss werden die Abhängigkeiten der Python-Installation installiert. Dafür muss ggf. zuerst in das gerade erstellte Verzeichnis der Codebasis gewechselt werden. In diesem Verzeichnis befindet sich u.A. die Datei `requirements.txt`
 `sudo pip install --no-cache-dir -r requirements.txt`
