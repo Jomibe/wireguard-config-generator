@@ -92,7 +92,7 @@ def main():
             try:
                 server = import_configurations()
             except OSError:
-                console("Breche ab.", mode="err", perm=True)
+                console("Vorgang abgebrochen.", mode="info", perm=True)
             console("Verbindungen importiert.", mode="succ")
         elif option == "2":
             if server_config_exists(server):
