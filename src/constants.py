@@ -2,7 +2,7 @@
 Enthält vom Programm verwendete statische Veriablen. Die Parameter können auf das eigene System angepasst werden.
 """
 
-# Pfad des Konfigurationsverzeichnisses von Wireguard. Muss mit einem / enden. Standard: /etc/wireguard
+# Pfad des Konfigurationsverzeichnisses von Wireguard. Muss mit einem / enden. Standard: /etc/wireguard/
 WG_DIR = "../res/"
 
 # Dateiname der Serverkonfiguration. Standard: wg0.conf
