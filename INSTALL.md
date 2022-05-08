@@ -15,6 +15,8 @@ Nun kann das Image in einem Container ausgeführt werden:
 Vorhandene Verzeichnisse müssen im Container eingebunden werden, um die Konfigurationen bearbeiten zu können:
 `docker run -it --rm -v /etc/wireguard:/res wg-config-mgmt`
 
+Nach Konfigurationsänderungen muss der Container mit `docker restart` neu gestartet werden.
+
 ## Konventionelle Installation, getestet unter Ubuntu 22.04
 Als Basis wird eine Standardinstallation von Ubuntu 22.04 vorausgesetzt. Alle Aktualisierungen sollten installiert und das System sollte im Anschluss ggf. neu gestartet worden sein.
 `sudo apt update && sudo apt full-upgrade && sudo apt autoremove`
@@ -37,3 +39,5 @@ Nun kann das Programm ausgeführt werden. Dafür muss in das Verzeichnis `src` g
 `sudo python3 -m main`
 
 Der Aufruf von `python3` erfolgt mit `sudo` aufgrund der Berechtigungen des Konfigurationsverzeichnisses `/etc/wireguard`, wie oben bereits erwähnt.
+
+Sobald eine Konfiguration auf das Dateisystem geschrieben wurde, kann der Dienst erstmalig mit `sudo systemctl enable --now wg-quick@wg0` aktiviert werden. Nach Konfigurationsänderungen ist ein Neustart des Dienstes notwendig: `sudo systemctl restart wg-quick@wg0`
