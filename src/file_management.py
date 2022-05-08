@@ -21,19 +21,19 @@ def check_file(filename):
     """
     # Prüfung, ob der Pfad existiert.
     if not Path(filename).exists():
-        raise SystemExit(console("Der Pfad", filename, "existiert nicht.", mode="err", perm=True))
+        raise FileNotFoundError(console("Der Pfad", filename, "existiert nicht.", mode="err", perm=True))
 
     # Prüfung, ob der Pfad auf eine Datei zeigt.
     if not Path(filename).is_file():
-        raise SystemExit(console("Der Pfad", filename, "ist keine Datei.", mode="err", perm=True))
+        raise FileNotFoundError(console("Der Pfad", filename, "ist keine Datei.", mode="err", perm=True))
 
     # Prüfung, ob die Datei gelesen werden kann.
     if os.access(Path(filename), os.R_OK) is not True:
-        SystemExit(console("Die Datei", filename, "ist nicht lesbar.", mode="err", perm=True))
+        raise PermissionError(console("Die Datei", filename, "ist nicht lesbar.", mode="err", perm=True))
 
     # Prüfung, ob in die Datei geschrieben werden kann.
     if os.access(Path(filename), os.W_OK) is not True:
-        SystemExit(console("Die Datei", filename, "ist nicht beschreibbar.", mode="err", perm=True))
+        raise PermissionError(console("Die Datei", filename, "ist nicht beschreibbar.", mode="err", perm=True))
 
 
 def check_dir(dirname):
@@ -42,16 +42,16 @@ def check_dir(dirname):
     """
     # Prüfung, ob der Pfad existiert.
     if not Path(dirname).exists():
-        raise SystemExit(console("Der Pfad", dirname, "existiert nicht.", mode="err", perm=True))
+        raise FileNotFoundError(console("Der Pfad", dirname, "existiert nicht.", mode="err", perm=True))
 
     # Prüfung, ob der Pfad auf ein Verzeichnis zeigt.
     if not Path(dirname).is_dir():
-        raise SystemExit(console("Der Pfad", dirname, "ist kein Ordner.", mode="err", perm=True))
+        raise NotADirectoryError(console("Der Pfad", dirname, "ist kein Ordner.", mode="err", perm=True))
 
     # Prüfung, ob das Verzeichnis gelesen werden kann.
     if os.access(Path(dirname), os.R_OK) is not True:
-        SystemExit(console("Das Verzeichnis", dirname, "ist nicht lesbar.", mode="err", perm=True))
+        raise PermissionError(console("Das Verzeichnis", dirname, "ist nicht lesbar.", mode="err", perm=True))
 
     # Prüfung, ob in das Verzeichnis geschrieben werden kann.
     if os.access(Path(dirname), os.W_OK) is not True:
-        SystemExit(console("Das Verzeichnis", dirname, "ist nicht beschreibbar.", mode="err", perm=True))
+        raise PermissionError(console("Das Verzeichnis", dirname, "ist nicht beschreibbar.", mode="err", perm=True))

@@ -89,7 +89,10 @@ def main():
                 if choice != "j":
                     console("Vorgang abgebrochen", mode="info", perm=True)
                     continue
-            server = import_configurations()
+            try:
+                server = import_configurations()
+            except OSError:
+                console("Breche ab.", mode="err", perm=True)
             console("Verbindungen importiert.", mode="succ")
         elif option == "2":
             if server_config_exists(server):

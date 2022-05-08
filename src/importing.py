@@ -34,7 +34,10 @@ def parse_and_import(peer):
     """
 
     # Parameterprüfungen
-    check_file(peer.filename)
+    try:
+        check_file(peer.filename)
+    except OSError:  # Superklasse von FileNotFoundError, PermissionError und NotADirectoryError
+        raise
 
     # Vorbereitung, "deklarieren" der peer_config Variable für das Sammeln und Übertragen von Parametern einer
     # Peer-Sektion
@@ -231,7 +234,11 @@ def import_configurations():
 
     server = ServerConfig()
 
-    check_dir(WG_DIR)
+    try:
+        check_dir(WG_DIR)
+    except OSError:  # Superklasse von FileNotFoundError, PermissionError und NotADirectoryError
+        console("Breche ab.", mode="err", perm=True)
+        return
 
     # Einlesen der Konfigurationsdateien *.conf
 
@@ -277,7 +284,10 @@ def import_configurations():
                     quiet=True)
 
     # ..des Servers
-    parse_and_import(server)
+    try:
+        parse_and_import(server)
+    except OSError:
+        raise
 
     # Anpassung des Parameters address in der Serverkonfiguration. Das Zeichenketten-Objekt wird in ein
     # IP4Interface-Objekt umgewandelt. Dieses enthält eine IPv4-Adresse inkl. Maske.
