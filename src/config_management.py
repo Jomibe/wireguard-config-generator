@@ -7,7 +7,7 @@ Enthält alle Funktionen für das Verwalten und Anzeigen von importierten Konfig
 
 # Imports aus Standardbibliotheken
 import io
-from ipaddress import ip_address, ip_network  # Für netzwerktechnische Prüfungen
+from ipaddress import ip_address, ip_network, ip_interface  # Für netzwerktechnische Prüfungen
 import re  # Für das Parsen von Konfigurationsdateien
 
 # Imports von Drittanbietern
@@ -148,6 +148,14 @@ def insert_client(server):
                 # Falls ja, übernehme den Wert des Parameters in der Datenstruktur
                 setattr(new_client, key.lower(), value)
                 console("Parameter hinterlegt", mode="succ")
+
+            elif key.lower() == "name":
+                setattr(new_client, key.lower(), value)
+                console("Bezeichnung hinterlegt", mode="succ")
+
+            elif key.lower() == "filename":
+                setattr(new_client, key.lower(), value)
+                console("Bezeichnung hinterlegt", mode="succ")
             else:
                 console("Unbekannter Parameter", key, mode="warn", perm=True)
         elif input_line == ".":
@@ -327,12 +335,34 @@ def create_server_config():
     server.privatekey = keys.genkey()
 
     # Eingabe eines Namens
-    name = input("Server anlegen (Name?) > ")
+    # TODO UnicodeDecodeError an allen input() Statements verbauen
+    # TODO Alle Menüausgaben vor > fett drucken
+    while True:
+        try:
+            name = input("Server anlegen (Name?) > ")
+        except UnicodeDecodeError:
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
+        break
     server.name = name
 
     # Eingabe einer IP-Adresse
-    address = input("Server anlegen (IP-Adresse?) > ")
-    server.address = address
+    console("Bitte eine IP-Adresse inkl. CIDR-Maske eingeben. Z.B.:", "192.168.0.254/24", mode="info", perm=True)
+    while True:
+        address = input("Server anlegen (IP-Adresse?) > ")
+        try:
+            server.address = ip_interface(address)
+        except ValueError:
+            console("Ungültige Eingabe. Eingabe einer IPv4-Adresse inkl. CIDR-Maske erwartet.", mode="err", perm=True)
+            continue
+        if server.address.hostmask.compressed == '0.0.0.0' or server.address.hostmask.compressed == '0.0.0.1':
+            # Bei einer Eingabe ohne CIDR-Maske wird durch ip_interface() eine /32 Maske hinterlegt. Dadurch ist nicht
+            # erkennbar, ob der Benutzer tatsächlich /32 eingegeben hat oder die Angabe der CIDR-Maske fehlt. Daher
+            # müssen zwei Fehlermeldungen angezeigt werden.
+            console("Ungültige Eingabe. Eingabe einer IPv4-Adresse inkl. CIDR-Maske erwartet.", mode="err", perm=True)
+            console("Die Maske muss kleiner als /31 sein.", mode="err", perm=True)
+            continue
+        break
 
     return server
 
