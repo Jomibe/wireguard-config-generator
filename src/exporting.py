@@ -136,6 +136,9 @@ def config_to_str(server, choice):
 
     config_str = config_str + "\n[Peer]\n"
     console("Die Peer-Sektion enthält folgende Parameter:", end="", mode="info")
+    if server.name != "":
+        config_str = config_str + "# Name = " + server.name + "\n"
+        console("", "Name", ", ", end="", quiet=True, no_space=True, mode="info")
     for parameter in peer_config_parameters:
         if getattr(server.clients[client_id-1], parameter.lower()) != "":
             console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
