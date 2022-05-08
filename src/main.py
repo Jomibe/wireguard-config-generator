@@ -84,15 +84,13 @@ def main():
         try:
             check_dir(WG_DIR)
         except (FileNotFoundError, NotADirectoryError) :
-            console("Das Verzeichnis", WG_DIR, "existiert nicht. Konfiguration aus dem Arbeitsspeicher kann in diesem "
-                                               "Zustand nicht auf das Dateisystem geschrieben werden. Bitte die Datei",
-                    "constants.py", "anpassen.", mode="warn", perm=True)
+            console("Konfiguration aus dem Arbeitsspeicher kann in diesem Zustand nicht auf das Dateisystem geschrieben"
+                    " werden. Bitte den Parameter", "WG_DIR", "in der Datei", "constants.py", "anpassen.", mode="err",
+                    perm=True)
         except PermissionError:
-            console("Das Verzeichnis", WG_DIR, "besitzt unzureichende Berechtigungen. Konfiguration aus dem "
-                                               "Arbeitsspeicher kann in diesem Zustand nicht auf das Dateisystem "
-                                               "geschrieben werden. Bitte die Datei", "constants.py",
-                    "anpassen oder das Programm mit erhöhten Benutzerberechtigungen ausführen.", mode="warn", perm=True)
-
+            console("Konfiguration aus dem Arbeitsspeicher kann in diesem Zustand nicht auf das Dateisystem geschrieben"
+                    " werden. Bitte den Parameter", "WG_DIR", "in der Datei", "constants.py",
+                    "anpassen oder das Programm mit erhöhten Benutzerberechtigungen ausführen.", mode="err", perm=True)
 
         option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
 
