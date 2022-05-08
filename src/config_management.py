@@ -483,7 +483,7 @@ def print_qr_code(server, choice):
         return
 
     # QR-Code für server.clients[client_id] ausgeben
-    client_qr_code = qrcode.QRCode()
+    client_qr_code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10)
     client_qr_code.add_data(config_to_str(server, client_id))
     output = io.StringIO()
     client_qr_code.print_ascii(out=output)
