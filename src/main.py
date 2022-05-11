@@ -231,10 +231,22 @@ def main():
         elif option == "?":
             print_menu()
         elif option == "0":
-            # TODO BUG Es wird nicht (immer) geprüft, ob ungespeicherte Änderungen vorliegen
-            repeat = False
-        else:
-            console("Ungültige Eingabe. Für Hilfe", "?", "eingeben.", mode="err", perm=True)
+            if server is not None:
+                console("Es liegen ungespeicherte Änderungen vor. Wirklich verlassen?", "(j/n)", mode="warn", perm=True)
+                while True:
+                    choice = ""
+                    try:
+                        choice = input(f"{Style.BRIGHT}Verlassen (Bestätigung) > {Style.RESET_ALL}")
+                    except UnicodeDecodeError:
+                        console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                        continue
+                    break
+                if choice == "j":
+                    repeat = False
+                elif choice == "n":
+                    console("Vorgang abgebrochen", mode="info", perm=True)
+                else:
+                    console("Ungültige Eingabe. Für Hilfe", "?", "eingeben.", mode="err", perm=True)
 
 
 if __name__ == "__main__":
