@@ -92,23 +92,32 @@ def insert_client(server):
     new_client.publickey = keys.pubkey(server.privatekey)
 
     # Eingabe eines Namens
+    defaultname = "Client " + str(len(server.clients)+1)
+
     name = ""
     while True:
         try:
-            name = input("Client anlegen (Name?) > ")
+            name = input(f"{Style.BRIGHT}Client anlegen (Name?) [{defaultname}] > {Style.RESET_ALL}")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
         break
-    new_client.name = name
+    if name == "":
+        new_client.name = defaultname
+    else:
+        new_client.name = name
 
     # Eingabe einer IP-Adresse
+    # Hier kann ein IP-Adresskonflikt auftreten, der Benutzer wird allerdings gewarnt
+    defaultip = "192.168.0." + str(len(server.clients)+1)
     while True:
         try:
-            address = input("Client anlegen (IP-Adresse?) > ")
+            address = input(f"{Style.BRIGHT}Client anlegen (IP-Adresse?) [{defaultip}] > {Style.RESET_ALL}")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
+        if address == "":
+            address = defaultip  # Schlägt "automatisch" fehl, wenn mehr als 254 Clients auf diese Weise erstellt werden
         try:
             new_client.address = ip_address(address)
         except ValueError:
@@ -133,6 +142,13 @@ def insert_client(server):
             console("Es liegt ein IP-Adresskonflikt vor.", "Client " + str(index), "verwendet dieselbe IP-Adresse.",
                     mode="warn", perm=True)
 
+    # Parameter AllowedIPs auf IP-Adresse des Servers setzen. Damit wird standardmäßig nur Datenverkehr zum Server über
+    # das VPN geleitet
+    new_client.allowedips = server.address.ip
+
+    # Parameter endpoint standardmäßig auf öffentlichen DNS-Namen des Servers setzen
+    new_client.endpoint = server.publicaddress
+
     # Weitere Parameter abfragen, prüfen und einfügen
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
     while True:
@@ -142,7 +158,6 @@ def insert_client(server):
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
 
-        # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
         match = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
         # Prüfe, ob der Parameter ein unterstützter offizieller Parameter ist
@@ -174,6 +189,11 @@ def insert_client(server):
         else:
             console("Ungültige Eingabe.", mode="err", perm=True)
             # continue
+
+    # AllowedIPs Parameter der Server Peer-Sektion auf die IP-Adresse des Clients setzen, sodass nur Verkehr zum Client
+    # durch den Tunnel geleitet wird
+    new_client.client_allowedips = new_client.address
+
     # Clientkonfiguration zur Serverkonfiguration hinzufügen
     server.clients.append(new_client)
     console("Client zur Konfiguration hinzugefügt.", mode="succ")
@@ -221,7 +241,6 @@ def change_client(server, choice):
                 console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
 
-            # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
 
             match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
@@ -277,7 +296,6 @@ def change_client(server, choice):
                 console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                 continue
 
-            # TODO Refactoring: ausgelagerte Funktion aus parse_and_import() verwenden
             match_key_value = re.search(RE_MATCH_KEY_VALUE, input_line, re.IGNORECASE)
             match_key = re.search(RE_MATCH_KEY, input_line, re.IGNORECASE)
             if input_line == ".":
@@ -351,21 +369,42 @@ def create_server_config():
     while True:
         name = ""
         try:
-            name = input("Server anlegen (Name?) > ")
+            name = input(f"{Style.BRIGHT}Server anlegen (Name?) [WireGuard VPN-Server] > {Style.RESET_ALL}")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
         break
-    server.name = name
+    if name == "":
+        server.name = "WireGuard VPN-Server"
+    else:
+        server.name = name
+
+    # Eingabe einer öffentlich erreichbaren IP-Adresse oder eines Hostnamens
+    while True:
+        publicaddress = ""
+        try:
+            publicaddress = input(f"{Style.BRIGHT}Server anlegen (Öffentliche Adresse?) [vpn.example.com] > "
+                                  f"{Style.RESET_ALL}")
+        except UnicodeDecodeError:
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
+        break
+    if publicaddress == "":
+        server.publicaddress = "vpn.example.com"
+    else:
+        server.publicaddress = publicaddress
 
     # Eingabe einer IP-Adresse
     console("Bitte eine IP-Adresse inkl. CIDR-Maske eingeben. Z.B.:", "192.168.0.254/24", mode="info", perm=True)
     while True:
         try:
-            address = input("Server anlegen (IP-Adresse?) > ")
+            address = input(f"{Style.BRIGHT}Server anlegen (IP-Adresse?) [192.168.0.254/24] > {Style.RESET_ALL}")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
+        if address == "":
+            server.address = ip_interface("192.168.0.254/24")
+            break
         try:
             server.address = ip_interface(address)
         except ValueError:
@@ -480,6 +519,16 @@ def change_network_size(server, choice):
     index = 0
     for client in server.clients:
         client.address = list_of_host_addr[index]
+        index = index + 1
+
+        # Parameter AllowedIPs der Peer-Sektion des Servers muss ebenfalls angepasst werden. Andernfalls werden falsche
+        # Routen erstellt und es ist keine Datenübertragung möglich.
+        client.client_allowedips = client.address
+
+        # Parameter AllowedIPs in den Peer-Sektionen der Clients muss aus dem selben Grund angepasst werden
+        # TODO BUG der Parameter wird ohne Prüfung auf vorherige Anpassungen überschrieben
+        client.allowedips = server.address
+
         console("Weise Client mit privatem Schlüssel", f"{client.privatekey:5}" + "...", "die IP-Adresse",
                 list_of_host_addr[index], "zu.", mode="info")
 
