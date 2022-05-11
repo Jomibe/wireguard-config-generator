@@ -117,7 +117,8 @@ def config_to_str(server, choice):
             for parameter in peer_config_parameters:
                 console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
                 if getattr(client, "client_" + parameter.lower()) != "":
-                    config_str = config_str + parameter + " = " + getattr(client, "client_" + parameter.lower()) + "\n"
+                    config_str = config_str + parameter + " = " + str(getattr(client, "client_" + parameter.lower())) \
+                                 + "\n"
             console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
         return config_str
@@ -142,8 +143,8 @@ def config_to_str(server, choice):
     for parameter in peer_config_parameters:
         if getattr(server.clients[client_id-1], parameter.lower()) != "":
             console("", parameter, ", ", end="", quiet=True, no_space=True, mode="info")
-            config_str = config_str + parameter + " = " + getattr(server.clients[client_id-1],
-                                                                  parameter.lower()) + "\n"
+            config_str = config_str + parameter + " = " + str(getattr(server.clients[client_id-1],
+                                                                      parameter.lower())) + "\n"
     console(quiet=True, mode="info")  # Zeilenumbruch für detaillierte Ausgaben zum Programmablauf
 
     return config_str
