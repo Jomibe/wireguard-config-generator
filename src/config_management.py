@@ -349,6 +349,7 @@ def create_server_config():
 
     # Eingabe eines Namens
     while True:
+        name = ""
         try:
             name = input("Server anlegen (Name?) > ")
         except UnicodeDecodeError:
