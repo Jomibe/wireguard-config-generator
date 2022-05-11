@@ -92,12 +92,23 @@ def insert_client(server):
     new_client.publickey = keys.pubkey(server.privatekey)
 
     # Eingabe eines Namens
-    name = input("Client anlegen (Name?) > ")
+    name = ""
+    while True:
+        try:
+            name = input("Client anlegen (Name?) > ")
+        except UnicodeDecodeError:
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
+        break
     new_client.name = name
 
     # Eingabe einer IP-Adresse
     while True:
-        address = input("Client anlegen (IP-Adresse?) > ")
+        try:
+            address = input("Client anlegen (IP-Adresse?) > ")
+        except UnicodeDecodeError:
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
         try:
             new_client.address = ip_address(address)
         except ValueError:
@@ -337,8 +348,6 @@ def create_server_config():
     server.privatekey = keys.genkey()
 
     # Eingabe eines Namens
-    # TODO UnicodeDecodeError an allen input() Statements verbauen
-    # TODO Alle Menüausgaben vor > fett drucken
     while True:
         try:
             name = input("Server anlegen (Name?) > ")
@@ -351,7 +360,11 @@ def create_server_config():
     # Eingabe einer IP-Adresse
     console("Bitte eine IP-Adresse inkl. CIDR-Maske eingeben. Z.B.:", "192.168.0.254/24", mode="info", perm=True)
     while True:
-        address = input("Server anlegen (IP-Adresse?) > ")
+        try:
+            address = input("Server anlegen (IP-Adresse?) > ")
+        except UnicodeDecodeError:
+            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+            continue
         try:
             server.address = ip_interface(address)
         except ValueError:

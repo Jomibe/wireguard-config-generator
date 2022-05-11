@@ -92,13 +92,27 @@ def main():
                     " werden. Bitte den Parameter", "WG_DIR", "in der Datei", "constants.py",
                     "anpassen oder das Programm mit erhöhten Benutzerberechtigungen ausführen.", mode="err", perm=True)
 
-        option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
+        option = ""
+        while True:
+            try:
+                option = input(f"{Style.BRIGHT}Hauptmenü > {Style.RESET_ALL}")
+            except UnicodeDecodeError:
+                console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                continue
+            break
 
         if option == "1":
             console("Importiere Verbindungen...", mode="info")
             if server is not None:
                 console("Konfiguration im Arbeitsspeicher überschreiben?", "[j/n]", mode="warn", perm=True)
-                choice = input("Verbindungen importieren (Bestätigung) > ")
+                choice = ""
+                while True:
+                    try:
+                        choice = input(f"{Style.BRIGHT}Verbindungen importieren (Bestätigung) > {Style.RESET_ALL}")
+                    except UnicodeDecodeError:
+                        console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                        continue
+                    break
                 if choice != "j":
                     console("Vorgang abgebrochen", mode="info", perm=True)
                     continue
@@ -112,7 +126,14 @@ def main():
                 print_configuration(server)
                 console("Für Details", "ID", "eingeben, ", "0", "für den Server. Zurück zum Hauptmenü mit", ".",
                         mode="info", perm=True)
-                choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
+                choice = ""
+                while True:
+                    try:
+                        choice = input(f"{Style.BRIGHT}Details anzeigen > {Style.RESET_ALL}")
+                    except UnicodeDecodeError:
+                        console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                        continue
+                    break
                 if choice == ".":
                     continue
                 print(config_to_str(server, choice))
@@ -120,7 +141,14 @@ def main():
             if server is None:
                 console("Keine Serverkonfiguration vorhanden. Soll eine neue Konfiguration im Arbeitsspeicher angelegt "
                         "werden?", "(j/n)", mode="warn", perm="True")
-                choice = input("Konfiguration anlegen (Bestätigung) > ")
+                choice = ""
+                while True:
+                    try:
+                        choice = input(f"{Style.BRIGHT} Konfiguration anlegen (Bestätigung) > {Style.RESET_ALL}")
+                    except UnicodeDecodeError:
+                        console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                        continue
+                    break
 
                 if choice == "j":
                     server = create_server_config()
@@ -134,10 +162,24 @@ def main():
             if server_config_exists(server):
                 console("Bitte", "ID", "des Clients eingeben,", 0, "für den Server. Zurück zum Hauptmenü mit", ".",
                         mode="info", perm=True)
-                choice = input("Konfiguration entfernen (Auswahl) > ")
+                choice = ""
+                while True:
+                    try:
+                        choice = input(f"{Style.BRIGHT}Konfiguration entfernen (Auswahl) > {Style.RESET_ALL}")
+                    except UnicodeDecodeError:
+                        console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                        continue
+                    break
                 if choice == "0":
                     console("Gesamtkonfiguration aus dem Arbeitsspeicher entfernen?", "(j/n)", mode="warn", perm=True)
-                    choice = input("Konfiguration entfernen (Bestätigung) > ")
+                    choice = ""
+                    while True:
+                        try:
+                            choice = input(f"{Style.BRIGHT}Konfiguration entfernen (Bestätigung) > {Style.RESET_ALL}")
+                        except UnicodeDecodeError:
+                            console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
+                            continue
+                        break
                     if choice != "j":
                         console("Vorgang abgebrochen", mode="info", perm=True)
                         continue
