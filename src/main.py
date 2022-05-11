@@ -144,7 +144,7 @@ def main():
                 choice = ""
                 while True:
                     try:
-                        choice = input(f"{Style.BRIGHT} Konfiguration anlegen (Bestätigung) > {Style.RESET_ALL}")
+                        choice = input(f"{Style.BRIGHT}Konfiguration anlegen (Bestätigung) > {Style.RESET_ALL}")
                     except UnicodeDecodeError:
                         console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
                         continue
