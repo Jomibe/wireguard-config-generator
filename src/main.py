@@ -83,7 +83,7 @@ def main():
 
         try:
             check_dir(WG_DIR)
-        except (FileNotFoundError, NotADirectoryError) :
+        except (FileNotFoundError, NotADirectoryError):
             console("Konfiguration aus dem Arbeitsspeicher kann in diesem Zustand nicht auf das Dateisystem geschrieben"
                     " werden. Bitte den Parameter", "WG_DIR", "in der Datei", "constants.py", "anpassen.", mode="err",
                     perm=True)
