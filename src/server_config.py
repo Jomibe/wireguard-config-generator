@@ -25,6 +25,7 @@ class ServerConfig:
     def __init__(self):
         self.name = ""  # Die Bezeichnung des Servers ("friendly name").
         self.filename = WG_DIR + SERVER_CONFIG_FILENAME  # Der Dateiname inkl. Dateiendung.
+        self.publicaddress = ""  # Öffentlich erreichbare IP-Adresse oder Hostname
         self.address = ""  # Die Hostadresse im VPN.
         self.listenport = ""  # Der Port auf welchem gelauscht wird.
         self.privatekey = ""  # Der private Schlüssel, base64 kodiert.
