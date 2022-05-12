@@ -231,7 +231,9 @@ def main():
         elif option == "?":
             print_menu()
         elif option == "0":
-            if server is not None:
+            if server is None:
+                repeat = False
+            else:
                 console("Es liegen ungespeicherte Änderungen vor. Wirklich verlassen?", "(j/n)", mode="warn", perm=True)
                 while True:
                     choice = ""
