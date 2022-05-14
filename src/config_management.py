@@ -410,7 +410,7 @@ def create_server_config():
         except ValueError:
             console("Ungültige Eingabe. Eingabe einer IPv4-Adresse inkl. CIDR-Maske erwartet.", mode="err", perm=True)
             continue
-        if server.address.hostmask.compressed == '0.0.0.0' or server.address.hostmask.compressed == '0.0.0.1':
+        if server.address.hostmask.compressed in ('0.0.0.0', '0.0.0.1'):
             # Bei einer Eingabe ohne CIDR-Maske wird durch ip_interface() eine /32 Maske hinterlegt. Dadurch ist nicht
             # erkennbar, ob der Benutzer tatsächlich /32 eingegeben hat oder die Angabe der CIDR-Maske fehlt. Daher
             # müssen zwei Fehlermeldungen angezeigt werden.
