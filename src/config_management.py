@@ -153,7 +153,7 @@ def insert_client(server):
     console("Bitte weitere Parameter eintragen. Zurück mit", ".", mode="info", perm=True)
     while True:
         try:
-            input_line = input("Client anlegen (zusätzliche Parameter?) > ")
+            input_line = input(f"{Style.BRIGHT}Client anlegen (zusätzliche Parameter?) > {Style.RESET_ALL}")
         except UnicodeDecodeError:
             console("Ungültige Eingabe. Bitte keine Akzente eingeben.", mode="err", perm=True)
             continue
