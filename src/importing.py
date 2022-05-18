@@ -85,6 +85,12 @@ def parse_and_import(peer):
             if match:
                 console("Zeile leitet eine INI-Sektion ein.", mode="succ")
 
+                # Hier können vier Fälle vorliegen: Client und [Interface], Client und [Peer], Server und [Interface]
+                # sowie Server und [Peer]. In den ersten drei genannten Fällen kann die Zeile mit der Sektionsdefinition
+                # ignoriert werden, es gibt in den beiden Sektionen keine doppelten Parameter. Die Parameter können
+                # daher problemlos einer Sektion zugeordnet werden. Sonderfall Server und [Peer]: diese kommt so häufig
+                # vor, wie es Clients gibt. Daher muss diese vollständig erfasst und abgespeichert werden.
+
                 match = re.search(r'^ *\[Peer] *$', line, re.IGNORECASE)
                 if match and is_server:
                     console("Zeile leitet eine Peer-Sektion ein.", mode="succ")
