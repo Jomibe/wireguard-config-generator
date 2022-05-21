@@ -507,8 +507,8 @@ def change_network_size(server, choice):
 
     # Dem Server die letzte IP-Adresse im Subnetz zuweisen
     try:
-        console("Weise dem Server die IP-Adresse", list_of_host_addr[-1], "zu.", mode="info")
-        server.address = list_of_host_addr[-1]
+        console("Weise dem Server die IP-Adresse", f"{list_of_host_addr[-1]}/{cidr_mask}", "zu.", mode="info")
+        server.address = ip_interface(f"{list_of_host_addr[-1]}/{cidr_mask}")
     except AttributeError:
         console("Es ist keine Serverkonfiguration vorhanden. Neue erstellen oder importieren. Breche ab.",
                 mode="err", perm=True)
