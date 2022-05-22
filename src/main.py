@@ -5,17 +5,6 @@ Jonas Berger, Fachhochschule Südwestfalen
 
 Thema: Entwicklung eines Konfigurationsgenerators für WireGuard VPN
 
-! Wireguard Konfigurationsdateien sind case-insensitive
-! configparser kann nicht verwendet werden, da [Peer] in Serverkonfigurationen mehrfach vorkommt
-! INI-Syntax wird nicht vollständig abgebildet: s.o., Name muss als Kommentar eingefügt werden
-? Erweiterbarkeit: Datenstruktur als abgeleitete Klasse von dict (kompliziert, wird von abgeraten) vs. dict (primitiv)
-  vs. neue abgeleitete Klasse (schönste Lösung, umständliche Erweiterung)
-! Schlüsselgenerierung: https://github.com/k4yt3x/wg-meshconf/blob/master/wg_meshconf/wireguard.py
-! Syntaxprüfung mit pylint, Formatierung nach PEP 8
-! base64 Schlüssel enthalten 0-2 Gleichheitszeichen am Ende
-! Ausblick: Erweiterung, sodass mehrere Server verwaltet werden können, möglich
-! Aufgrund von Dateisystemen und unterschiedlichen Entwicklungsanforderungen unterscheiden sich Dateisysteminteraktionen
-  zwischen Unix und Windows u.U. grundsätzlich: https://stackoverflow.com/questions/8107352/force-overwrite-in-os-rename
 """
 
 # Es gibt ein Problem mit der Erkennung von lokalen Modulen durch pylint. Daher:
