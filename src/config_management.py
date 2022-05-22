@@ -75,9 +75,6 @@ def insert_client(server):
     """
     Erstellt eine neue Clientkonfiguration. Werte für Parameter werden über die Kosole eingegeben.
     """
-
-    # TODO Bearbeitung von Server Peer-Parametern
-
     # Vorbereitung auf Generierung einer Liste mit allen verfügbaren Parameternamen in Kleinbuchstaben
     config_parameters = [parameter.lower() for parameter in CONFIG_PARAMETERS]
 
@@ -356,7 +353,6 @@ def create_server_config():
     """
     Erstelle eine neue Konfiguration.
     """
-    
     server = ServerConfig()
 
     # Ein privater Schlüssel wird generiert und hinterlegt. Der öffentliche Schlüssel kann jederzeit anhand des
@@ -524,7 +520,6 @@ def change_network_size(server, choice):
         client.client_allowedips = client.address
 
         # Parameter AllowedIPs in den Peer-Sektionen der Clients muss aus dem selben Grund angepasst werden
-        # TODO BUG der Parameter wird ohne Prüfung auf vorherige Anpassungen überschrieben
         client.allowedips = server.address
 
         console("Weise Client mit privatem Schlüssel", f"{client.privatekey:5}" + "...", "die IP-Adresse",

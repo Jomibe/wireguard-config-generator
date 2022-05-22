@@ -37,7 +37,8 @@ def parse_and_import(peer):
     try:
         check_file(peer.filename)
     except OSError:  # Superklasse von FileNotFoundError, PermissionError und NotADirectoryError
-        raise
+        console("Breche ab.", mode="err", perm=True)
+        return None
 
     # Vorbereitung, "deklarieren" der peer_config Variable für das Sammeln und Übertragen von Parametern einer
     # Peer-Sektion
@@ -131,8 +132,6 @@ def parse_and_import(peer):
                             "Bezeichnung interpretiert, dieser und folgende Kommentare werden ignoriert.", mode="info")
                 continue
 
-            # TODO Refactoring: nach Erkennung des regex weiteren Prozess in Funktion auslagern und in insert_client()
-            #  wiederverwenden
             match = re.search("^([^ ]*) *= *(.*)", line, re.IGNORECASE)
             # Name und Wert werden ohne Leerzeichen zur Weiterverarbeitung gespeichert
             key = re.split("^([^ ]*) *= *(.*)", line, re.IGNORECASE)[1].strip()
@@ -176,6 +175,9 @@ def parse_and_import(peer):
         # und für den Fall, dass eine Peer-Sektion endet: übertrage Daten von client_data in das server Objekt.
         if isinstance(client_data, Peer):  # Falls eine Peer-Sektion verarbeitet wurde
             assign_peer_to_client(client_data, peer)  # peer ist in diesem Fall immer ein Objekt der Klasse ServerConfig
+
+        # PEP 8: Either all return statements in a function should return an expression, or none of them should.
+        return None
 
 
 def assign_peer_to_client(client_data, server):
@@ -244,7 +246,7 @@ def import_configurations():
         check_dir(WG_DIR)
     except OSError:  # Superklasse von FileNotFoundError, PermissionError und NotADirectoryError
         console("Breche ab.", mode="err", perm=True)
-        return
+        return None
 
     # Einlesen der Konfigurationsdateien *.conf
 
@@ -293,7 +295,8 @@ def import_configurations():
     try:
         parse_and_import(server)
     except OSError:
-        raise
+        console("Breche ab.", mode="err", perm=True)
+        return None
 
     # Anpassung des Parameters address in der Serverkonfiguration. Das Zeichenketten-Objekt wird in ein
     # IP4Interface-Objekt umgewandelt. Dieses enthält eine IPv4-Adresse inkl. Maske.
