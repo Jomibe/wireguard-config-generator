@@ -139,3 +139,4 @@ doc/Visual Paradigm Projekt/*
 .idea/
 src/pylintrc
 res/.wg_conf_bak/*
+*.docx
