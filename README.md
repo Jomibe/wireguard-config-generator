@@ -33,10 +33,11 @@ PublicKey = Ew8gAiOdwOIoltpCwDYrLFzMJb/Jl3oB7GO1k4JqgzY=
 ```
 [Interface]
 # Name = Mein iPhone
-Address = 10.10.10.2/32
+Address = 10.10.10.2
 PrivateKey = kC/Wd4Ws65DX4FXCsZBkHdNAbKVpe86JJbIA2LK0slY=
 
 [Peer]
+# Name = Serverkonfiguration
 AllowedIPs = 10.10.10.1
 Endpoint = mein-vpn-server:12345
 PublicKey = 0dAwIB3Ji96GYdlesA+iCNxhB7NElkFf7DZ4GWyaEFI=
